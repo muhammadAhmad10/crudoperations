@@ -5,14 +5,18 @@ import { Route, Routes } from "react-router-dom";
 import ShowRecipe from "./RoutePages/ShowRecipe";
 import AddRecipe from "./RoutePages/AddRecipe";
 import EditRecipe from "./RoutePages/EditRecipe";
+import { useState, useEffect } from "react";
 
 function App() {
+  const [db, setDB] = useState("mongodb");
+  const [usertype, setUserType] = useState("guest");
+
   return (
     <div className="App">
       <Header />
       <div className="main">
         <div className="sidebar">
-          <Sidebar />
+          <Sidebar setDB={setDB} setUserType={setUserType} />
         </div>
         <div className="body">
           <Routes>
@@ -20,8 +24,6 @@ function App() {
             <Route path="/" element={<ShowRecipe />} />
             <Route path="/addRecipe" element={<AddRecipe />} />
             <Route path="/editRecipe" element={<EditRecipe />} />
-
-            {/* <Route path="/" element={<Footer />} /> */}
           </Routes>
         </div>
       </div>

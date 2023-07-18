@@ -2,16 +2,17 @@ import "../styles/showRecipe.css";
 import { useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import axios from "axios";
+import { Link } from "react-router-dom";
 
 export default function ShowRecipe() {
   const [data, setData] = useState([]);
   const navigate = useNavigate();
 
-  useEffect(() => {
-    axios.get("http://localhost:4000/api/recipes").then((res) => {
-      setData(res.data);
-    });
-  }, []);
+  // useEffect(() => {
+  //   axios.get("http://localhost:4000/api/recipes").then((res) => {
+  //     setData(res.data);
+  //   });
+  // }, []);
 
   const handleDelete = (id) => {
     axios
@@ -60,8 +61,8 @@ export default function ShowRecipe() {
     <div className="showRecipe">
       <h1 className="text-light">Recipes</h1>
       <div className=" recipies d-flex flex-row flex-wrap justify-content-center align-items-center pb-4">
-        {RecipeCards}
-        {/* <div className="card" style={{ width: "18rem", margin: "10px" }}>
+        {/* {RecipeCards} */}
+        <div className="card" style={{ width: "18rem", margin: "10px" }}>
           <div className="card-body">
             <h5 className="card-title">Recipie title</h5>
             <h6 className="card-subtitle mb-2 text-muted">Card subtitle</h6>
@@ -92,7 +93,7 @@ export default function ShowRecipe() {
               Delete Recipe
             </a>
           </div>
-        </div> */}
+        </div>
       </div>
     </div>
   );
