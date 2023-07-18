@@ -1,0 +1,19 @@
+@media screen and (max-width:570px) {
+    .head {
+        display: flex;
+        flex-direction: column;
+        /* background: #000; */
+    }
+
+    .title {
+        width: 100%;
+        text-align: start;
+        margin-left: -32px;
+        /* background: #ab3030; */
+    }
+
+    .search {
+        width: 100%;
+        /* background: #4b43bc; */
+    }
+}

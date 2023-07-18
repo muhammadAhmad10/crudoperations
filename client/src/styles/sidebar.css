@@ -1,0 +1,29 @@
+.sidebar {
+    height: 90vh;
+    min-width: 250px;
+    max-width: 570px;
+    padding-top: 5px;
+}
+
+.nav-item {
+    background: salmon;
+    margin-top: 8px;
+    margin-left: 10px;
+    margin-right: 10px;
+    border-radius: 10px;
+}
+
+@media screen and (max-width:570px) {
+    .sidebar {
+        height: 25vh;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        padding-bottom: 10px;
+    }
+
+    .nav-item {
+        margin-left: 20px;
+        margin-right: 20px;
+    }
+}

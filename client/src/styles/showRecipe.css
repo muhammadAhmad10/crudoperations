@@ -1,0 +1,13 @@
+.showRecipe {
+    overflow-y: scroll;
+    height: 90vh;
+}
+
+@media screen and (max-width:570px) {
+    .showRecipe {
+        overflow-y: visible;
+        height: auto;
+        padding-top: 20px;
+        min-height: 57.3vh;
+    }
+}
