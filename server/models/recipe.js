@@ -5,7 +5,7 @@ const schema = new mongoose.Schema({
   ingredients: String,
   instructions: String,
   servings: String,
-  // image: String,
+  image: String,
   category: String,
 });
 

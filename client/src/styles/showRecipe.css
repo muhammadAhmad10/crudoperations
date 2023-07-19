@@ -3,11 +3,45 @@
     height: 90vh;
 }
 
+.card-body {
+    min-height: 150px;
+    max-height: 180px;
+    /* background: rgb(96, 196, 216); */
+}
+
+.card-img-top {
+    height: 210px;
+}
+
+.detail {
+    text-decoration: none;
+    color: black;
+    font-weight: 600;
+}
+
+.detail:hover {
+    text-decoration: underline;
+    color: black;
+}
+
+.author {
+    position: absolute;
+    bottom: 10px;
+    right: 10px;
+    font-size: 13px;
+
+}
+
+
 @media screen and (max-width:570px) {
     .showRecipe {
         overflow-y: visible;
         height: auto;
         padding-top: 20px;
         min-height: 57.3vh;
+    }
+
+    .card button {
+        margin-top: 5px;
     }
 }

@@ -1,62 +1,122 @@
 import { Link } from "react-router-dom";
 import "../styles/sidebar.css";
 
-export default function Sidebar({ setDB, setUserType }) {
+export default function Sidebar({ setDB, handleOptionChange }) {
+  const handleOptionClick = (option) => {
+    handleOptionChange(option);
+  };
+  const isLogin = JSON.parse(localStorage.getItem("isLogin"));
   return (
     <div className="sidebar">
       <h1 className="text-start text-light ms-2">MongoDB</h1>
       <ul className="nav flex-column">
         <li className="nav-item">
-          <Link className="nav-link text-light" aria-current="page" to="/">
+          <Link
+            onClick={() => {
+              setDB("mongodb");
+            }}
+            className="nav-link text-light"
+            aria-current="page"
+            to="/"
+          >
             Recipes
           </Link>
         </li>
-        <li className="nav-item">
-          <Link
-            className="nav-link text-light"
-            aria-current="page"
-            to="/addRecipe"
-          >
-            Add Recipe
-          </Link>
-        </li>
-        <li className="nav-item">
-          <Link
-            className="nav-link text-light"
-            aria-current="page"
-            to="/myRecipes"
-          >
-            My Recipes
-          </Link>
-        </li>
+        {isLogin !== null && (
+          <>
+            <li className="nav-item">
+              <Link
+                className="nav-link text-light"
+                aria-current="page"
+                onClick={() => {
+                  setDB("mongodb");
+                }}
+                to="/addRecipe"
+              >
+                Add Recipe
+              </Link>
+            </li>
+            <li className="nav-item">
+              <Link
+                className="nav-link text-light"
+                aria-current="page"
+                onClick={() => {
+                  setDB("mongodb");
+                }}
+                to="/myRecipes"
+              >
+                My Recipes
+              </Link>
+            </li>
+          </>
+        )}
       </ul>
       <hr className="text-light ms-2 me-2" />
       <h1 className="text-start text-light ms-2">SQLite</h1>
       <ul className="nav flex-column">
         <li className="nav-item">
-          <Link className="nav-link text-light" aria-current="page" to="/">
+          <Link
+            onClick={() => {
+              setDB("sqlite");
+            }}
+            className="nav-link text-light"
+            aria-current="page"
+            to="/"
+          >
             Recipes
           </Link>
         </li>
-        <li className="nav-item">
-          <Link
-            className="nav-link text-light"
-            aria-current="page"
-            to="/addRecipe"
-          >
-            Add Recipe
-          </Link>
-        </li>
-        <li className="nav-item">
-          <Link
-            className="nav-link text-light"
-            aria-current="page"
-            to="/myRecipes"
-          >
-            My Recipes
-          </Link>
-        </li>
+        {isLogin !== null && (
+          <>
+            <li className="nav-item">
+              <Link
+                onClick={() => {
+                  setDB("sqlite");
+                }}
+                className="nav-link text-light"
+                aria-current="page"
+                to="/addRecipe"
+              >
+                Add Recipe
+              </Link>
+            </li>
+            <li className="nav-item">
+              <Link
+                onClick={() => {
+                  setDB("sqlite");
+                }}
+                className="nav-link text-light"
+                aria-current="page"
+                to="/myRecipes"
+              >
+                My Recipes
+              </Link>
+            </li>
+          </>
+        )}
       </ul>
+      <hr className="text-light ms-2 me-2 hr" />
+      {isLogin === null ? (
+        <div className="container">
+          <Link
+            onClick={() => handleOptionClick("login")}
+            className="btn btn-primary ps-5 pe-5 fs-5"
+            to="/login"
+          >
+            Login
+          </Link>
+        </div>
+      ) : (
+        <div className="container">
+          <Link
+            onClick={() => handleOptionClick("logout")}
+            className="btn btn-primary ps-5 pe-5 fs-5"
+            to="/"
+          >
+            Logout
+          </Link>
+        </div>
+      )}
     </div>
   );
 }

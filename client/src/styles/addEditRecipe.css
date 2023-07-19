@@ -9,26 +9,46 @@
     width: 50%;
 }
 
+
+.formContainer {
+    overflow-y: scroll;
+    height: 91vh;
+}
+
 @media screen and (max-width:800px) {
     .add-recipe {
         width: 60%;
     }
+
+
 }
 
 @media screen and (max-width:700px) {
     .add-recipe {
         width: 70%;
     }
+
+
 }
 
 @media screen and (max-width:600px) {
     .add-recipe {
         width: 80%;
     }
+
+
+
 }
 
-@media screen and (max-width:500px) {
+@media screen and (max-width:570px) {
     .add-recipe {
         width: 90%;
     }
+
+    .formContainer {
+        overflow-y: inherit;
+        height: 105vh;
+    }
+
+
 }

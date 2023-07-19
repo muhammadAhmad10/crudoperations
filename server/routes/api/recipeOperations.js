@@ -8,6 +8,8 @@ router.get("/", async (req, res) => {
   res.json(recipes);
 });
 
+console.log("mongodb route handler file");
+
 //Get recipe by id
 router.get("/:id", async (req, res) => {
   const recipe = await Recipe.findById(req.params.id);

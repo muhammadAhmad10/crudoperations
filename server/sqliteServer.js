@@ -1,7 +1,13 @@
 var express = require("express");
 var app = express();
+var cors = require("cors");
 
-app.use("/api/recipe", require("./routes/api/sqliteRecipesOperations.js"));
+app.use(cors());
+
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+
+app.use("/api/recipes", require("./routes/api/sqliteRecipesOperations.js"));
 
 // Start server
 var port = 8000;

@@ -40,13 +40,15 @@ router.get("/:id", async (req, res) => {
 //Post a recipe
 router.post("/", (req, res) => {
   var insert =
-    "INSERT INTO recipes (title,ingredients,servings,instructions,category) VALUES (?,?,?,?,?)";
+    "INSERT INTO recipes (title,ingredients,servings,instructions,category,image,author) VALUES (?,?,?,?,?,?,?)";
   const values = [
     req.body.title,
     req.body.ingredients,
     req.body.servings,
     req.body.instructions,
     req.body.category,
+    req.body.image,
+    req.body.author,
   ];
 
   db.run(insert, values, (err) => {
@@ -60,8 +62,16 @@ router.post("/", (req, res) => {
 
 //Edit a recipe
 router.put("/:id", (req, res) => {
-  const updateQuery = `update from recipes set title=${req.body.title},ingredients=${req.body.ingredients},servings=${req.body.servings},instructions=${req.body.instructions},category=${req.body.category}`;
-  db.run(updateQuery, (err, row) => {
+  const updateQuery = `update recipes set title=?,ingredients=?,servings=?,instructions=?,category=? where _id=?`;
+  const values = [
+    req.body.title,
+    req.body.ingredients,
+    req.body.servings,
+    req.body.instructions,
+    req.body.category,
+    req.params.id,
+  ];
+  db.run(updateQuery, values, (err, row) => {
     if (err) {
       console.log("got error while updating data: ", err);
     } else {
@@ -72,7 +82,7 @@ router.put("/:id", (req, res) => {
 
 //Delete a recipe
 router.delete("/:id", async (req, res) => {
-  const deleteQuery = "delete from recipes where id=?";
+  const deleteQuery = "delete from recipes where _id=?";
   const values = [req.params.id];
   db.run(deleteQuery, values, (err, row) => {
     if (err) {
