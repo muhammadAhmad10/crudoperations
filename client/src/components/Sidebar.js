@@ -1,7 +1,7 @@
 import { Link } from "react-router-dom";
 import "../styles/sidebar.css";
 
-export default function Sidebar({ setDB, handleOptionChange }) {
+export default function Sidebar({ handleOptionChange }) {
   const handleOptionClick = (option) => {
     handleOptionChange(option);
   };
@@ -13,7 +13,9 @@ export default function Sidebar({ setDB, handleOptionChange }) {
         <li className="nav-item">
           <Link
             onClick={() => {
-              setDB("mongodb");
+              localStorage.setItem("db", JSON.stringify("mongodb"));
+
+              // setDB("mongodb");
             }}
             className="nav-link text-light"
             aria-current="page"
@@ -29,7 +31,9 @@ export default function Sidebar({ setDB, handleOptionChange }) {
                 className="nav-link text-light"
                 aria-current="page"
                 onClick={() => {
-                  setDB("mongodb");
+                  localStorage.setItem("db", JSON.stringify("mongodb"));
+
+                  // setDB("mongodb");
                 }}
                 to="/addRecipe"
               >
@@ -41,7 +45,9 @@ export default function Sidebar({ setDB, handleOptionChange }) {
                 className="nav-link text-light"
                 aria-current="page"
                 onClick={() => {
-                  setDB("mongodb");
+                  localStorage.setItem("db", JSON.stringify("mongodb"));
+
+                  // setDB("mongodb");
                 }}
                 to="/myRecipes"
               >
@@ -57,7 +63,8 @@ export default function Sidebar({ setDB, handleOptionChange }) {
         <li className="nav-item">
           <Link
             onClick={() => {
-              setDB("sqlite");
+              // setDB("sqlite");
+              localStorage.setItem("db", JSON.stringify("sqlite"));
             }}
             className="nav-link text-light"
             aria-current="page"
@@ -71,7 +78,8 @@ export default function Sidebar({ setDB, handleOptionChange }) {
             <li className="nav-item">
               <Link
                 onClick={() => {
-                  setDB("sqlite");
+                  localStorage.setItem("db", JSON.stringify("sqlite"));
+                  // setDB("sqlite");
                 }}
                 className="nav-link text-light"
                 aria-current="page"
@@ -83,7 +91,9 @@ export default function Sidebar({ setDB, handleOptionChange }) {
             <li className="nav-item">
               <Link
                 onClick={() => {
-                  setDB("sqlite");
+                  localStorage.setItem("db", JSON.stringify("sqlite"));
+
+                  // setDB("sqlite");
                 }}
                 className="nav-link text-light"
                 aria-current="page"

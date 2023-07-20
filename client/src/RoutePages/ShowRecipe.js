@@ -4,21 +4,44 @@ import { useEffect, useState } from "react";
 import axios from "axios";
 import { Link, useParams } from "react-router-dom";
 
-export default function ShowRecipe({ db }) {
+export default function ShowRecipe() {
   const [data, setData] = useState([]);
   const navigate = useNavigate();
   const location = useLocation();
   const [isLogin, setIsLogin] = useState(null);
   const [author, setAuthor] = useState(null);
   const [ownerData, setOwnerData] = useState([]);
+  const db = JSON.parse(localStorage.getItem("db"));
 
   // console.log(isLogin, author);
   useEffect(() => {
     setAuthor(JSON.parse(localStorage.getItem("author")));
     setIsLogin(JSON.parse(localStorage.getItem("isLogin")));
 
-    setOwnerData(data.filter((recipe) => recipe.author === author));
+    // setOwnerData(data.filter((recipe) => recipe.author === author));
   }, [location.pathname]);
+
+  useEffect(() => {
+    var url = "";
+    if (db === "mongodb") {
+      url = "http://localhost:4000/api/recipes";
+    } else {
+      url = "http://localhost:8000/api/recipes";
+    }
+    if (db) {
+      axios.get(url).then((res) => {
+        if (db === "mongodb") {
+          // setData(res.data);
+          setOwnerData(res.data.filter((recipe) => recipe.author === author));
+        } else {
+          // setData(res.data.data);
+          setOwnerData(
+            res.data.data.filter((recipe) => recipe.author === author)
+          );
+        }
+      });
+    }
+  }, [location.pathname, db, ownerData]);
 
   useEffect(() => {
     var url = "";
@@ -36,9 +59,10 @@ export default function ShowRecipe({ db }) {
         }
       });
     }
-  }, [db]);
+  }, [db, location.pathname]);
 
   const handleDelete = (id) => {
+    console.log(db);
     var url = ``;
     if (db === "mongodb") {
       url += `http://localhost:4000/api/recipes/${id}`;
@@ -50,9 +74,13 @@ export default function ShowRecipe({ db }) {
       .then((res) => {
         console.log("successfully deleted: ", res);
         setData(data.filter((recipe) => recipe._id !== id));
+        navigate("/myRecipes");
       })
       .catch((err) => {
         console.log("error occured: ", err);
+      })
+      .finally(() => {
+        navigate("/myRecipes");
       });
   };
 

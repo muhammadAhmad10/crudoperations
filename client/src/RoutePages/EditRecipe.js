@@ -13,12 +13,12 @@ export default function EditRecipe() {
 
   const [selectedOption, setSelectedOption] = useState(recipe.category);
 
-  const handleOptionChange = (e) => {
-    setUpdatedRecipe((prevRecipe) => ({
-      ...prevRecipe,
-      category: e.target.value,
+  const handleOptionChange = async (e) => {
+    setSelectedOption(e);
+    setUpdatedRecipe((precRecipe) => ({
+      ...precRecipe,
+      category: e,
     }));
-    // setSelectedOption(option);
   };
 
   const handleTitleChange = (e) => {
@@ -57,7 +57,7 @@ export default function EditRecipe() {
           url += `http://localhost:8000/api/recipes/${updatedRecipe._id}`;
         }
         const res = axios.put(url, updatedRecipe);
-        navigate("/");
+        navigate("/myRecipes");
         // console.log("successfully updated: ", res);
       } catch (err) {
         console.log("error occured: ", err);

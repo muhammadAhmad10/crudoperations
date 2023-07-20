@@ -7,6 +7,7 @@ const schema = new mongoose.Schema({
   servings: String,
   image: String,
   category: String,
+  author: String,
 });
 
 const Recipe = mongoose.model("recipes", schema);

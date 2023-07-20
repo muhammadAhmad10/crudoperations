@@ -21,14 +21,17 @@ if (!firebase.apps.length) {
 const storage = firebase.storage();
 const storageRef = storage.ref();
 
-export default function AddRecipe({ db }) {
+export default function AddRecipe() {
+  const author = JSON.parse(localStorage.getItem("author"));
+  const db = JSON.parse(localStorage.getItem("db"));
   const [recipe, setRecipe] = useState({
     title: "",
     ingredients: "",
-    servings: "",
     instructions: "",
-    category: "",
+    servings: "",
     image: "",
+    category: "",
+    author: author,
   });
   const navigate = useNavigate();
 
@@ -74,13 +77,10 @@ export default function AddRecipe({ db }) {
 
   const handleOptionChange = async (e) => {
     setSelectedOption(e);
-    // console.log(e);
-    // if (selectedOption) {
     setRecipe((precRecipe) => ({
       ...precRecipe,
       category: e,
     }));
-    console.log("category is: ", recipe.category);
   };
 
   const handleTitleChange = (e) => {
@@ -111,6 +111,7 @@ export default function AddRecipe({ db }) {
   const handleAdd = async (e) => {
     console.log("db is: ", db);
     e.preventDefault();
+    console.log(recipe);
     if (recipe && downloadUrl) {
       var url = "";
       if (db === "mongodb") {
@@ -118,15 +119,27 @@ export default function AddRecipe({ db }) {
       } else {
         url += "http://localhost:8000/api/recipes";
       }
-      await axios
-        .post(url, recipe)
-        .then((res) => {
-          navigate("/");
-          // console.log("successfully added: ", res);
-        })
-        .catch((err) => {
-          console.log("error occured: ", err);
-        });
+      if (db === "sqlite") {
+        try {
+          const response = axios.post(url, recipe);
+          // console.log("data uploaded successfuly");
+          navigate("/myRecipes");
+        } catch {
+          alert("Error while uploading data");
+        }
+      }
+
+      if (db === "mongodb") {
+        await axios
+          .post(url, recipe)
+          .then((res) => {
+            // console.log("data inserted successfully", res);
+            navigate("/myRecipes");
+          })
+          .catch((err) => {
+            console.log("error occured: ", err);
+          });
+      }
     }
   };
 

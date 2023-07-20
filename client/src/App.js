@@ -16,7 +16,7 @@ import {
 } from "firebase/auth";
 
 function App() {
-  const [db, setDB] = useState("mongodb");
+  // const [db, setDB] = useState("mongodb");
   const [usertype, setUserType] = useState("guest");
 
   let navigate = useNavigate();
@@ -89,23 +89,27 @@ function App() {
     // console.log("logout button pressed", selectedOption);
     if (selectedOption === "logout") {
       localStorage.setItem("isLogin", JSON.stringify(null));
+      localStorage.setItem("author", JSON.stringify("null"));
+      localStorage.setItem("db", JSON.stringify("mongodb"));
       navigate("/");
     }
   }, [selectedOption]);
-  console.log(db);
+  // console.log(db);
   return (
     <div className="App">
       <Header />
       <div className="main">
         <div className="sidebar">
-          <Sidebar setDB={setDB} handleOptionChange={handleOptionChange} />
+          <Sidebar handleOptionChange={handleOptionChange} />
+
+          {/* <Sidebar setDB={setDB} handleOptionChange={handleOptionChange} /> */}
         </div>
         <div className="body">
           <Routes>
-            <Route path="/" element={<ShowRecipe db={db} />} />
-            <Route path="/myRecipes" element={<ShowRecipe db={db} />} />
+            <Route path="/" element={<ShowRecipe />} />
+            <Route path="/myRecipes" element={<ShowRecipe />} />
             <Route path="/recipe/:title" element={<RecipeDetail />} />
-            <Route path="/addRecipe" element={<AddRecipe db={db} />} />
+            <Route path="/addRecipe" element={<AddRecipe />} />
             <Route path="/editRecipe" element={<EditRecipe />} />
             <Route
               path="/login"
