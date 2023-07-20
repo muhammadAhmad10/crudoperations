@@ -17,7 +17,7 @@ import {
 
 function App() {
   // const [db, setDB] = useState("mongodb");
-  const [usertype, setUserType] = useState("guest");
+  // const [usertype, setUserType] = useState("guest");
 
   let navigate = useNavigate();
   let location = useLocation();
@@ -25,8 +25,8 @@ function App() {
   const [selectedOption, setSelectedOption] = useState("home");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const isLogin = JSON.parse(localStorage.getItem("isLogin"));
-  const author = JSON.parse(localStorage.getItem("author"));
+  // const isLogin = JSON.parse(localStorage.getItem("isLogin"));
+  // const author = JSON.parse(localStorage.getItem("author"));
   const [disableButton, setDisableButton] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
   const [to, setTo] = useState("");

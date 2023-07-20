@@ -121,7 +121,7 @@ export default function AddRecipe() {
       }
       if (db === "sqlite") {
         try {
-          const response = axios.post(url, recipe);
+          axios.post(url, recipe);
           // console.log("data uploaded successfuly");
           navigate("/myRecipes");
         } catch {

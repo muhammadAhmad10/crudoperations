@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import "../styles/addEditRecipe.css";
 import { useLocation, useNavigate } from "react-router-dom";
 import axios from "axios";
@@ -11,10 +11,10 @@ export default function EditRecipe() {
   const db = location.state.db;
   const [updatedRecipe, setUpdatedRecipe] = useState(recipe);
 
-  const [selectedOption, setSelectedOption] = useState(recipe.category);
+  // const [selectedOption, setSelectedOption] = useState(recipe.category);
 
   const handleOptionChange = async (e) => {
-    setSelectedOption(e);
+    // setSelectedOption(e);
     setUpdatedRecipe((precRecipe) => ({
       ...precRecipe,
       category: e,
@@ -56,7 +56,7 @@ export default function EditRecipe() {
         } else {
           url += `http://localhost:8000/api/recipes/${updatedRecipe._id}`;
         }
-        const res = axios.put(url, updatedRecipe);
+        axios.put(url, updatedRecipe);
         navigate("/myRecipes");
         // console.log("successfully updated: ", res);
       } catch (err) {

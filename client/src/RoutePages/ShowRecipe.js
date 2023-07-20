@@ -2,13 +2,13 @@ import "../styles/showRecipe.css";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useEffect, useState } from "react";
 import axios from "axios";
-import { Link, useParams } from "react-router-dom";
+import { Link } from "react-router-dom";
 
 export default function ShowRecipe() {
   const [data, setData] = useState([]);
   const navigate = useNavigate();
   const location = useLocation();
-  const [isLogin, setIsLogin] = useState(null);
+  // const [isLogin, setIsLogin] = useState(null);
   const [author, setAuthor] = useState(null);
   const [ownerData, setOwnerData] = useState([]);
   const db = JSON.parse(localStorage.getItem("db"));
@@ -16,7 +16,7 @@ export default function ShowRecipe() {
   // console.log(isLogin, author);
   useEffect(() => {
     setAuthor(JSON.parse(localStorage.getItem("author")));
-    setIsLogin(JSON.parse(localStorage.getItem("isLogin")));
+    // setIsLogin(JSON.parse(localStorage.getItem("isLogin")));
 
     // setOwnerData(data.filter((recipe) => recipe.author === author));
   }, [location.pathname]);
@@ -92,16 +92,12 @@ export default function ShowRecipe() {
         style={{ width: "18rem", margin: "10px" }}
       >
         {recipe.image ? (
-          <img
-            src={recipe.image}
-            className="card-img-top"
-            alt="Image of recipe"
-          />
+          <img src={recipe.image} className="card-img-top" alt="recipe" />
         ) : (
           <img
             src={process.env.PUBLIC_URL + "/defaultRecipe.jpg"}
             className="card-img-top"
-            alt="Image of recipe"
+            alt="recipe"
           />
         )}
 
@@ -145,16 +141,12 @@ export default function ShowRecipe() {
         style={{ width: "18rem", margin: "10px" }}
       >
         {recipe.image ? (
-          <img
-            src={recipe.image}
-            className="card-img-top"
-            alt="Image of recipe"
-          />
+          <img src={recipe.image} className="card-img-top" alt="recipe" />
         ) : (
           <img
             src={process.env.PUBLIC_URL + "/defaultRecipe.jpg"}
             className="card-img-top"
-            alt="Image of recipe"
+            alt="recipe"
           />
         )}
 

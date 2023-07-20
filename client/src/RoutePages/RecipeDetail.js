@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useLocation, useParams } from "react-router-dom";
+import { useLocation } from "react-router-dom";
 import "../styles/RecipeDetails.css";
 export default function RecipeDetail() {
   const { state } = useLocation();
@@ -8,7 +8,6 @@ export default function RecipeDetail() {
   useEffect(() => {
     const ingredients = state.ingredients.split(",");
     setIngredients(ingredients);
-    console.log(state.image);
   }, []);
 
   return (
@@ -27,12 +26,13 @@ export default function RecipeDetail() {
         {state.image ? (
           <img
             src={state.image}
+            alt="details of recipe"
             // style={{ width: "400px", height: "200px" }}
           />
         ) : (
           <img
             src={process.env.PUBLIC_URL + "/defaultRecipe.jpg"}
-            alt="image"
+            alt="details of recipe"
             // style={{ width: "100%", height: "300px" }}
           />
         )}
