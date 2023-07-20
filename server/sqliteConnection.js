@@ -57,9 +57,9 @@
 // module.exports = db;
 
 const sqlite3 = require("sqlite3").verbose();
-const DBSOURCE = "./database.db";
+const database = "./database.db";
 
-const db = new sqlite3.Database(DBSOURCE, async (err) => {
+const db = new sqlite3.Database(database, async (err) => {
   if (err) {
     console.error("Unable to open database: ", err.message);
     throw err;

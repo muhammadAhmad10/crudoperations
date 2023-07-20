@@ -50,12 +50,12 @@ export default function AddRecipe() {
 
       uploadTask.on(
         "state_changed",
-        (snapshot) => {
-          // Progress monitoring (optional)
-          const progress =
-            (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
-          console.log("Upload is " + progress + "% done");
-        },
+        // (snapshot) => {
+        //   // Progress monitoring (optional)
+        //   const progress =
+        //     (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+        //   console.log("Upload is " + progress + "% done");
+        // },
         (error) => {
           // Error handling
           console.log(error);
@@ -109,9 +109,9 @@ export default function AddRecipe() {
   };
 
   const handleAdd = async (e) => {
-    console.log("db is: ", db);
+    // console.log("db is: ", db);
     e.preventDefault();
-    console.log(recipe);
+    // console.log(recipe);
     if (recipe && downloadUrl) {
       var url = "";
       if (db === "mongodb") {

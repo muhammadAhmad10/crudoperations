@@ -2,12 +2,11 @@
     height: 90vh;
     min-width: 250px;
     max-width: 570px;
-    padding-top: 5px;
 }
 
 .nav-item {
     background: salmon;
-    margin-top: 8px;
+    margin-top: 6px;
     margin-left: 10px;
     margin-right: 10px;
     border-radius: 10px;
