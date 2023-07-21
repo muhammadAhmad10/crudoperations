@@ -146,7 +146,7 @@ router.delete("/:id", async (req, res) => {
     if (err) {
       console.log("Could not delete recipe.");
     } else {
-      res.json("Recipe deleted successfully");
+      console.log("Recipe deleted successfully");
     }
   });
 });

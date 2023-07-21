@@ -8,6 +8,7 @@ import EditRecipe from "./RoutePages/EditRecipe";
 import { useState, useEffect } from "react";
 import Authentication from "./components/Authentication";
 import RecipeDetail from "./RoutePages/RecipeDetail";
+import FavouriteRecipes from "./RoutePages/FavouriteRecipes";
 import "firebase/app";
 import "firebase/compat/app";
 import app from "./config";
@@ -113,6 +114,7 @@ function App() {
             <Route path="/recipe/:title" element={<RecipeDetail />} />
             <Route path="/addRecipe" element={<AddRecipe />} />
             <Route path="/editRecipe" element={<EditRecipe />} />
+            <Route path="/myFavourites" element={<FavouriteRecipes />} />
             <Route
               path="/login"
               element={

@@ -20,8 +20,7 @@ export default function AddRecipe() {
   const navigate = useNavigate();
 
   const [selectedOption, setSelectedOption] = useState("Appetizers");
-  const [image, setImage] = useState(null);
-  const [downloadUrl, setDownloadURL] = useState(null);
+  const [disableButton, setDisableButton] = useState(false);
 
   const handleImageChange = (e) => {
     const file = e.target.files[0];
@@ -111,41 +110,26 @@ export default function AddRecipe() {
     ) {
       console.log("recipe is: ", recipe);
       console.log("image name is: ", recipe.image.name);
-
+      setDisableButton(true);
       var url = "";
       if (db === "mongodb") {
         url += "http://localhost:4000/api/recipes";
       } else {
         url += "http://localhost:8000/api/recipes";
       }
-      if (db === "sqlite") {
+      if (db) {
         try {
           axios.post(url, recipe, {
             headers: {
               "Content-Type": "multipart/form-data", // Set the correct content type for form data
             },
           });
-          // console.log("data uploaded successfuly");
+          localStorage.setItem("recipeAdded", JSON.stringify(true));
+          setDisableButton(false);
           navigate("/myRecipes");
         } catch {
           alert("Error while uploading data");
         }
-      }
-
-      if (db === "mongodb") {
-        axios
-          .post(url, recipe, {
-            headers: {
-              "Content-Type": "multipart/form-data", // Set the correct content type for form data
-            },
-          })
-          .then((res) => {
-            // console.log("data inserted successfully", res);
-            navigate("/myRecipes");
-          })
-          .catch((err) => {
-            console.log("error occured: ", err);
-          });
       }
     } else {
       setErrorMessage("Please fill all fields or upload file");
@@ -267,7 +251,11 @@ export default function AddRecipe() {
             {errorMessage}
           </p>
           <div className="mb-3">
-            <button type="submit" className="btn btn-primary">
+            <button
+              disabled={disableButton}
+              type="submit"
+              className="btn btn-primary"
+            >
               Add Recipe
             </button>
           </div>

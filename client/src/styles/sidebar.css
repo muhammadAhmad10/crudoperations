@@ -6,14 +6,14 @@
 
 .nav-item {
     background: salmon;
-    margin-top: 6px;
+    margin-top: 4px;
     margin-left: 10px;
     margin-right: 10px;
     border-radius: 10px;
 }
 
 .hr {
-    margin-bottom: 12px;
+    margin-bottom: 6px;
 }
 
 @media screen and (max-width:570px) {

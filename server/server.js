@@ -14,6 +14,7 @@ const PORT = process.env.PORT || 5050;
 
 // Api Route
 app.use("/api/recipes", require("./routes/api/recipeOperations.js"));
+app.use("/api/favorites", require("./routes/api/favoritesRoutes.js"));
 
 // Default Route
 app.use("/", (req, res) => {

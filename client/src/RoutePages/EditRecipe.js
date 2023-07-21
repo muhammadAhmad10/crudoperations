@@ -10,6 +10,7 @@ export default function EditRecipe() {
   const recipe = location.state.recipe;
   const db = location.state.db;
   const [updatedRecipe, setUpdatedRecipe] = useState(recipe);
+  const [disableButton, setDisableButton] = useState(false);
 
   // const [selectedOption, setSelectedOption] = useState(recipe.category);
 
@@ -56,8 +57,10 @@ export default function EditRecipe() {
         } else {
           url += `http://localhost:8000/api/recipes/${updatedRecipe._id}`;
         }
+        setDisableButton(true);
         axios.put(url, updatedRecipe);
         navigate("/myRecipes");
+        setDisableButton(false);
         // console.log("successfully updated: ", res);
       } catch (err) {
         console.log("error occured: ", err);
@@ -161,7 +164,11 @@ export default function EditRecipe() {
             ></textarea>
           </div>
           <div className="mb-3">
-            <button type="submit" className="btn btn-primary">
+            <button
+              disabled={disableButton}
+              type="submit"
+              className="btn btn-primary"
+            >
               Edit Recipe
             </button>
           </div>

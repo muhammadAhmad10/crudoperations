@@ -8,7 +8,7 @@ export default function Sidebar({ handleOptionChange }) {
   const isLogin = JSON.parse(localStorage.getItem("isLogin"));
   return (
     <div className="sidebar">
-      <h1 className="text-start text-light ms-2">MongoDB</h1>
+      <h1 className="text-start text-light m-0  ms-2">MongoDB</h1>
       <ul className="nav flex-column">
         <li className="nav-item">
           <Link
@@ -54,11 +54,25 @@ export default function Sidebar({ handleOptionChange }) {
                 My Recipes
               </Link>
             </li>
+            <li className="nav-item">
+              <Link
+                className="nav-link text-light"
+                aria-current="page"
+                onClick={() => {
+                  localStorage.setItem("db", JSON.stringify("mongodb"));
+
+                  // setDB("mongodb");
+                }}
+                to="/myFavourites"
+              >
+                Favourite Recipes
+              </Link>
+            </li>
           </>
         )}
       </ul>
-      <hr className="text-light ms-2 me-2" />
-      <h1 className="text-start text-light ms-2">SQLite</h1>
+      <hr className="text-light m-0 mt-2 mb-3 ms-2 me-2" />
+      <h1 className="text-start text-light m-0 ms-2">SQLite</h1>
       <ul className="nav flex-column">
         <li className="nav-item">
           <Link
