@@ -2,8 +2,17 @@ const express = require("express");
 const db = require("../../sqliteConnection.js");
 
 const router = express.Router();
+const multer = require("multer");
+const admin = require("firebase-admin");
+const serviceAccount = require("../../serviceAccountKey.json");
 
-console.log("into operatiosn files");
+admin.initializeApp({
+  credential: admin.credential.cert(serviceAccount),
+  storageBucket: "web-dev-acccd.appspot.com",
+});
+
+const bucket = admin.storage().bucket();
+const upload = multer({ storage: multer.memoryStorage() });
 
 // Get all recipes
 router.get("/", (req, res, next) => {
@@ -38,26 +47,75 @@ router.get("/:id", async (req, res) => {
 });
 
 //Post a recipe
-router.post("/", (req, res) => {
-  var insert =
-    "INSERT INTO recipes (title,ingredients,servings,instructions,category,image,author) VALUES (?,?,?,?,?,?,?)";
-  const values = [
-    req.body.title,
-    req.body.ingredients,
-    req.body.servings,
-    req.body.instructions,
-    req.body.category,
-    req.body.image,
-    req.body.author,
-  ];
+router.post("/", upload.single("image"), async (req, res) => {
+  const file = req.file;
 
-  db.run(insert, values, (err) => {
-    if (err) {
-      console.log("Error: ", err);
-    } else {
-      console.log("data inserted successfully!");
-    }
+  if (!file) {
+    return res.status(400).send("No file uploaded");
+  }
+
+  const filename = Date.now() + "_" + file.originalname;
+  const filepath = `books/${filename}`;
+
+  const bucketFile = bucket.file(filepath);
+
+  const stream = bucketFile.createWriteStream({
+    resumable: false,
+    metadata: {
+      metadata: {
+        firebaseStorageDownloadTokens: Date.now(),
+      },
+    },
   });
+
+  stream.on("finish", async () => {
+    const imageUrl = `https://firebasestorage.googleapis.com/v0/b/${
+      bucket.name
+    }/o/${encodeURIComponent(filepath)}?alt=media&token=${
+      bucketFile.metadata.metadata.firebaseStorageDownloadTokens
+    }`;
+
+    var insert =
+      "INSERT INTO recipes (title,ingredients,servings,instructions,category,image,author) VALUES (?,?,?,?,?,?,?)";
+    const values = [
+      req.body.title,
+      req.body.ingredients,
+      req.body.servings,
+      req.body.instructions,
+      req.body.category,
+      imageUrl,
+      req.body.author,
+    ];
+
+    db.run(insert, values, (err) => {
+      if (err) {
+        console.log("Error: ", err);
+      } else {
+        console.log("data inserted successfully!");
+      }
+    });
+  });
+
+  stream.end(file.buffer);
+  // var insert =
+  //   "INSERT INTO recipes (title,ingredients,servings,instructions,category,image,author) VALUES (?,?,?,?,?,?,?)";
+  // const values = [
+  //   req.body.title,
+  //   req.body.ingredients,
+  //   req.body.servings,
+  //   req.body.instructions,
+  //   req.body.category,
+  //   req.body.image,
+  //   req.body.author,
+  // ];
+
+  // db.run(insert, values, (err) => {
+  //   if (err) {
+  //     console.log("Error: ", err);
+  //   } else {
+  //     console.log("data inserted successfully!");
+  //   }
+  // });
 });
 
 //Edit a recipe

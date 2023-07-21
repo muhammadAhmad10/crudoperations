@@ -1,5 +1,5 @@
 import "../styles/showRecipe.css";
-import { useNavigate, useLocation } from "react-router-dom";
+import { useNavigate, useLocation, redirect } from "react-router-dom";
 import { useEffect, useState } from "react";
 import axios from "axios";
 import { Link } from "react-router-dom";
@@ -8,40 +8,37 @@ export default function ShowRecipe() {
   const [data, setData] = useState([]);
   const navigate = useNavigate();
   const location = useLocation();
-  // const [isLogin, setIsLogin] = useState(null);
   const [author, setAuthor] = useState(null);
   const [ownerData, setOwnerData] = useState([]);
   const db = JSON.parse(localStorage.getItem("db"));
+  const [userDataFetched, setUserDataFetched] = useState(false);
 
-  // console.log(isLogin, author);
   useEffect(() => {
     setAuthor(JSON.parse(localStorage.getItem("author")));
-    // setIsLogin(JSON.parse(localStorage.getItem("isLogin")));
-
-    // setOwnerData(data.filter((recipe) => recipe.author === author));
   }, [location.pathname]);
 
   useEffect(() => {
-    var url = "";
-    if (db === "mongodb") {
-      url = "http://localhost:4000/api/recipes";
-    } else {
-      url = "http://localhost:8000/api/recipes";
-    }
-    if (db) {
+    if (!userDataFetched && db && author) {
+      var url = "";
+      if (db === "mongodb") {
+        url = "http://localhost:4000/api/recipes";
+      } else {
+        url = "http://localhost:8000/api/recipes";
+      }
+
       axios.get(url).then((res) => {
         if (db === "mongodb") {
-          // setData(res.data);
           setOwnerData(res.data.filter((recipe) => recipe.author === author));
         } else {
-          // setData(res.data.data);
           setOwnerData(
             res.data.data.filter((recipe) => recipe.author === author)
           );
         }
+        setUserDataFetched(true); // Mark user data as fetched to avoid fetching again
       });
     }
-  }, [location.pathname, db, ownerData]);
+  }, [location.pathname, db, userDataFetched]);
+  // }, [location.pathname, db, ownerData]);
 
   useEffect(() => {
     var url = "";
@@ -57,11 +54,22 @@ export default function ShowRecipe() {
         } else {
           setData(res.data.data);
         }
+
+        if (author) {
+          if (db === "mongodb") {
+            setOwnerData(res.data.filter((recipe) => recipe.author === author));
+          } else {
+            setOwnerData(
+              res.data.data.filter((recipe) => recipe.author === author)
+            );
+          }
+          setUserDataFetched(true);
+        }
       });
     }
-  }, [db, location.pathname]);
+  }, [db, location.pathname, author]);
 
-  const handleDelete = (id) => {
+  const handleDelete = async (id) => {
     console.log(db);
     var url = ``;
     if (db === "mongodb") {

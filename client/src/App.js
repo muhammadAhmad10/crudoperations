@@ -8,7 +8,9 @@ import EditRecipe from "./RoutePages/EditRecipe";
 import { useState, useEffect } from "react";
 import Authentication from "./components/Authentication";
 import RecipeDetail from "./RoutePages/RecipeDetail";
-
+import "firebase/app";
+import "firebase/compat/app";
+import app from "./config";
 import {
   getAuth,
   signInWithEmailAndPassword,

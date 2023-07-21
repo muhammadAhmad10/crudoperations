@@ -2,6 +2,18 @@ const express = require("express");
 const router = express.Router();
 const Recipe = require("../../models/recipe");
 
+const multer = require("multer");
+const admin = require("firebase-admin");
+const serviceAccount = require("../../serviceAccountKey.json");
+
+admin.initializeApp({
+  credential: admin.credential.cert(serviceAccount),
+  storageBucket: "web-dev-acccd.appspot.com",
+});
+
+const bucket = admin.storage().bucket();
+const upload = multer({ storage: multer.memoryStorage() });
+
 // Get all recipes
 router.get("/", async (req, res) => {
   const recipes = await Recipe.find();
@@ -19,15 +31,56 @@ router.get("/:id", async (req, res) => {
 });
 
 //Post a recipe
-router.post("/", async (req, res) => {
-  const recipe = req.body;
-  try {
-    const newRecipe = new Recipe(recipe);
-    const savedRecipe = await newRecipe.save();
-    res.json({ message: "New Recipt Added Successfully!", savedRecipe });
-  } catch (error) {
-    res, send(error);
+router.post("/", upload.single("image"), async (req, res) => {
+  const { title, ingredients, servings, category, instructions, author } =
+    req.body;
+  const file = req.file;
+
+  if (!file) {
+    return res.status(400).send("No file uploaded");
   }
+
+  const filename = Date.now() + "_" + file.originalname;
+  const filepath = `books/${filename}`;
+
+  const bucketFile = bucket.file(filepath);
+
+  const stream = bucketFile.createWriteStream({
+    resumable: false,
+    metadata: {
+      metadata: {
+        firebaseStorageDownloadTokens: Date.now(),
+      },
+    },
+  });
+
+  stream.on("finish", async () => {
+    const imageUrl = `https://firebasestorage.googleapis.com/v0/b/${
+      bucket.name
+    }/o/${encodeURIComponent(filepath)}?alt=media&token=${
+      bucketFile.metadata.metadata.firebaseStorageDownloadTokens
+    }`;
+
+    const newRecipe = new Recipe({
+      title: title,
+      ingredients: ingredients,
+      instructions: instructions,
+      servings: servings,
+      image: imageUrl,
+      category: category,
+      author: author,
+    });
+
+    try {
+      const savedBook = await newRecipe.save();
+      console.log("recipe posted successfuly");
+    } catch (error) {
+      console.error("Error saving recipe:", error);
+      res.status(500).send("Error saving recipe");
+    }
+  });
+
+  stream.end(file.buffer);
 });
 
 //edit a recipe

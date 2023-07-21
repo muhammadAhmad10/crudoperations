@@ -3,35 +3,19 @@ import "../styles/addEditRecipe.css";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import { Dropdown } from "react-bootstrap";
-import firebase from "firebase/compat/app";
-import "firebase/compat/storage";
-
-const firebaseConfig = {
-  apiKey: "AIzaSyAfTkAdt5GHgXS6hE8YBphkbs4rfoPibdM",
-  authDomain: "web-dev-acccd.firebaseapp.com",
-  projectId: "web-dev-acccd",
-  storageBucket: "web-dev-acccd.appspot.com",
-  messagingSenderId: "682830567134",
-  appId: "1:682830567134:web:e9e897c99424447eeb144f",
-};
-
-if (!firebase.apps.length) {
-  firebase.initializeApp(firebaseConfig);
-}
-const storage = firebase.storage();
-const storageRef = storage.ref();
 
 export default function AddRecipe() {
   const author = JSON.parse(localStorage.getItem("author"));
   const db = JSON.parse(localStorage.getItem("db"));
+  const [errorMessage, setErrorMessage] = useState("");
   const [recipe, setRecipe] = useState({
     title: "",
     ingredients: "",
     instructions: "",
     servings: "",
-    image: "",
     category: "",
     author: author,
+    image: null,
   });
   const navigate = useNavigate();
 
@@ -41,39 +25,44 @@ export default function AddRecipe() {
 
   const handleImageChange = (e) => {
     const file = e.target.files[0];
-    setImage(file);
+    setRecipe({
+      ...recipe,
+      image: file,
+    });
+    // setImage(file);
+    // console.log(file);
   };
 
-  useEffect(() => {
-    if (image) {
-      const uploadTask = storageRef.child(`recipes/${image.name}`).put(image);
+  // useEffect(() => {
+  //   if (image) {
+  //     const uploadTask = storageRef.child(`recipes/${image.name}`).put(image);
 
-      uploadTask.on(
-        "state_changed",
-        // (snapshot) => {
-        //   // Progress monitoring (optional)
-        //   const progress =
-        //     (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
-        //   console.log("Upload is " + progress + "% done");
-        // },
-        (error) => {
-          // Error handling
-          console.log(error);
-        },
-        async () => {
-          // Upload success
-          await uploadTask.snapshot.ref.getDownloadURL().then((downloadURL) => {
-            // console.log("File available at", downloadURL);
-            setRecipe((recip) => ({
-              ...recip,
-              image: downloadURL,
-            }));
-            setDownloadURL(downloadURL);
-          });
-        }
-      );
-    }
-  }, [image]);
+  //     uploadTask.on(
+  //       "state_changed",
+  //       // (snapshot) => {
+  //       //   // Progress monitoring (optional)
+  //       //   const progress =
+  //       //     (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+  //       //   console.log("Upload is " + progress + "% done");
+  //       // },
+  //       (error) => {
+  //         // Error handling
+  //         console.log(error);
+  //       },
+  //       async () => {
+  //         // Upload success
+  //         await uploadTask.snapshot.ref.getDownloadURL().then((downloadURL) => {
+  //           // console.log("File available at", downloadURL);
+  //           setRecipe((recip) => ({
+  //             ...recip,
+  //             image: downloadURL,
+  //           }));
+  //           setDownloadURL(downloadURL);
+  //         });
+  //       }
+  //     );
+  //   }
+  // }, [image]);
 
   const handleOptionChange = async (e) => {
     setSelectedOption(e);
@@ -111,8 +100,18 @@ export default function AddRecipe() {
   const handleAdd = async (e) => {
     // console.log("db is: ", db);
     e.preventDefault();
-    // console.log(recipe);
-    if (recipe && downloadUrl) {
+    if (
+      recipe.title &&
+      recipe.ingredients &&
+      recipe.author &&
+      recipe.category &&
+      recipe.instructions &&
+      recipe.servings &&
+      recipe.image
+    ) {
+      console.log("recipe is: ", recipe);
+      console.log("image name is: ", recipe.image.name);
+
       var url = "";
       if (db === "mongodb") {
         url += "http://localhost:4000/api/recipes";
@@ -121,7 +120,11 @@ export default function AddRecipe() {
       }
       if (db === "sqlite") {
         try {
-          axios.post(url, recipe);
+          axios.post(url, recipe, {
+            headers: {
+              "Content-Type": "multipart/form-data", // Set the correct content type for form data
+            },
+          });
           // console.log("data uploaded successfuly");
           navigate("/myRecipes");
         } catch {
@@ -130,8 +133,12 @@ export default function AddRecipe() {
       }
 
       if (db === "mongodb") {
-        await axios
-          .post(url, recipe)
+        axios
+          .post(url, recipe, {
+            headers: {
+              "Content-Type": "multipart/form-data", // Set the correct content type for form data
+            },
+          })
           .then((res) => {
             // console.log("data inserted successfully", res);
             navigate("/myRecipes");
@@ -140,6 +147,8 @@ export default function AddRecipe() {
             console.log("error occured: ", err);
           });
       }
+    } else {
+      setErrorMessage("Please fill all fields or upload file");
     }
   };
 
@@ -247,7 +256,16 @@ export default function AddRecipe() {
               placeholder="boil 1 littre water and then add salt in water ...."
             ></textarea>
           </div>
-
+          <p
+            style={{
+              fontSize: "13px",
+              textAlign: "start",
+              color: "red",
+              marginBottom: "10px",
+            }}
+          >
+            {errorMessage}
+          </p>
           <div className="mb-3">
             <button type="submit" className="btn btn-primary">
               Add Recipe
