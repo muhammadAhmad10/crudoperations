@@ -119,7 +119,7 @@ export default function Sidebar({ handleOptionChange }) {
           </>
         )}
       </ul>
-      <hr className="text-light ms-2 me-2 hr" />
+      <hr className="text-light ms-2 me-2 hr mt-2 mb-3" />
       {isLogin === null ? (
         <div className="container">
           <Link

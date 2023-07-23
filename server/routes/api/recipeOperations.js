@@ -30,6 +30,18 @@ router.get("/:id", async (req, res) => {
   res.json(recipe);
 });
 
+// //Get recipe by name
+// router.get("/:recipeTitle", async (req, res) => {
+//   console.log("huihuihuihui");
+//   console.log("req.params.recipeTitle: ", req.params.recipeTitle);
+//   const recipe = await Recipe.find({ title: req.params.recipeTitle });
+//   if (!recipe)
+//     return res
+//       .status(404)
+//       .send("The recipe with the given title was not found.");
+//   res.json(recipe);
+// });
+
 //Post a recipe
 router.post("/", upload.single("image"), async (req, res) => {
   const { title, ingredients, servings, category, instructions, author } =

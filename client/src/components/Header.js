@@ -1,6 +1,21 @@
 import { Link } from "react-router-dom";
 import "../styles/header.css";
+import { useState, useEffect } from "react";
+import axios from "axios";
+
 export default function Header() {
+  const [data, setData] = useState([]);
+  const [searchText, setSearchText] = useState("");
+
+  // useEffect(() => {
+  //   setData(JSON.parse(localStorage.getItem("mongoData")));
+  //   console.log(data);
+  // }, []);
+
+  const handleText = (e) => {
+    setSearchText(e.target.value);
+  };
+
   return (
     <div style={{ background: "rgb(252, 108, 92)" }}>
       <nav className="navbar">
@@ -12,14 +27,19 @@ export default function Header() {
           <div className="search" id="navbarSupportedContent">
             <form className="d-flex">
               <input
+                onChange={handleText}
                 className="form-control  me-2"
                 type="search"
                 placeholder="Search"
                 aria-label="Search"
               />
-              <button className="btn btn-outline-primary" type="submit">
+              <Link
+                to="/searchedItems"
+                state={{ searchText }}
+                className="btn btn-outline-primary"
+              >
                 Search
-              </button>
+              </Link>
             </form>
           </div>
         </div>

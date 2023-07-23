@@ -9,6 +9,7 @@ import { useState, useEffect } from "react";
 import Authentication from "./components/Authentication";
 import RecipeDetail from "./RoutePages/RecipeDetail";
 import FavouriteRecipes from "./RoutePages/FavouriteRecipes";
+import SearchedItems from "./RoutePages/SearchedItems";
 import "firebase/app";
 import "firebase/compat/app";
 import app from "./config";
@@ -19,17 +20,11 @@ import {
 } from "firebase/auth";
 
 function App() {
-  // const [db, setDB] = useState("mongodb");
-  // const [usertype, setUserType] = useState("guest");
-
   let navigate = useNavigate();
   let location = useLocation();
-
   const [selectedOption, setSelectedOption] = useState("home");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  // const isLogin = JSON.parse(localStorage.getItem("isLogin"));
-  // const author = JSON.parse(localStorage.getItem("author"));
   const [disableButton, setDisableButton] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
   const [to, setTo] = useState("");
@@ -115,6 +110,8 @@ function App() {
             <Route path="/addRecipe" element={<AddRecipe />} />
             <Route path="/editRecipe" element={<EditRecipe />} />
             <Route path="/myFavourites" element={<FavouriteRecipes />} />
+            <Route path="/searchedItems" element={<SearchedItems />} />
+
             <Route
               path="/login"
               element={

@@ -108,8 +108,6 @@ export default function AddRecipe() {
       recipe.servings &&
       recipe.image
     ) {
-      console.log("recipe is: ", recipe);
-      console.log("image name is: ", recipe.image.name);
       setDisableButton(true);
       var url = "";
       if (db === "mongodb") {
@@ -124,9 +122,8 @@ export default function AddRecipe() {
               "Content-Type": "multipart/form-data", // Set the correct content type for form data
             },
           });
-          localStorage.setItem("recipeAdded", JSON.stringify(true));
           setDisableButton(false);
-          navigate("/myRecipes");
+          navigate("/myRecipes", { state: recipe });
         } catch {
           alert("Error while uploading data");
         }

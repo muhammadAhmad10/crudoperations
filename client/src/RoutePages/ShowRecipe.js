@@ -69,8 +69,9 @@ export default function ShowRecipe() {
         }
         setUserDataFetched(true); // Mark user data as fetched to avoid fetching again
       });
+      setRecipeDeleted(false);
     }
-  }, [location.pathname, db, userDataFetched]);
+  }, [location.pathname, db, userDataFetched, recipeDeleted]);
 
   useEffect(() => {
     var url = "";
@@ -83,8 +84,10 @@ export default function ShowRecipe() {
       axios.get(url).then((res) => {
         if (db === "mongodb") {
           setData(res.data);
+          localStorage.setItem("mongoData", JSON.stringify(res.data));
         } else {
           setData(res.data.data);
+          localStorage.setItem("sqliteData", JSON.stringify(res.data.data));
         }
 
         if (author) {
@@ -110,17 +113,14 @@ export default function ShowRecipe() {
       url += `http://localhost:8000/api/recipes/${id}`;
     }
     setDisableButton(true);
-    axios
-      .delete(url)
-      .then((res) => {
-        console.log("successfully deleted: ", res);
-        setRecipeDeleted(true);
-        navigate("/myRecipes");
-        setDisableButton(false);
-      })
-      .catch((err) => {
-        console.log("error occured: ", err);
-      });
+    try {
+      const res = axios.delete(url);
+      navigate("/myRecipes");
+      setDisableButton(false);
+      setRecipeDeleted(true);
+    } catch {
+      console.log("could not delete");
+    }
   };
 
   const handleFavorite = async (id) => {
@@ -162,13 +162,15 @@ export default function ShowRecipe() {
               <h6 className="card-subtitle mb-2 text-muted">
                 {recipe.category}
               </h6>
-              <button
-                onClick={() => handleFavorite(recipe._id)}
-                style={{ marginRight: "-15px" }}
-                className="btn btn-secondary pt-1 pb-1"
-              >
-                Add Favorite
-              </button>
+              {db === "mongodb" ? (
+                <button
+                  onClick={() => handleFavorite(recipe._id)}
+                  style={{ marginRight: "-15px" }}
+                  className="btn btn-secondary pt-1 pb-1"
+                >
+                  Add Favorite
+                </button>
+              ) : null}
             </div>
 
             <Link

@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { Pagination } from "react-bootstrap";
+import axios from "axios";
 
 export default function FavouriteRecipes() {
   const [data, setData] = useState([]);
@@ -13,24 +14,14 @@ export default function FavouriteRecipes() {
     setAuthor(JSON.parse(localStorage.getItem("author")));
   }, [location.pathname]);
 
-  //   useEffect(() => {
-  //     const fetchData = async () => {
-  //       const res = await fetch(`http://localhost:4000/api/favorites/${author}`);
-  //       const data = await res.json();
-  //       if (data) {
-  //         console.log(data);
-  //         setData(data);
-  //       }
-  //     };
-  //     fetchData();
-  //   }, [author, location.pathname]);
-
   useEffect(() => {
     const fetchData = async () => {
-      const res = await fetch(`http://localhost:4000/api/favorites/${author}`);
-      const responseData = await res.json();
-      if (Array.isArray(responseData.recipes)) {
-        setData(responseData.recipes); // Set the 'recipes' property as the new state
+      if (author) {
+        const res = await axios.get(
+          `http://localhost:4000/api/favorites/${author}`
+        );
+        const responseData = await res.data.recipes;
+        setData(responseData);
       }
     };
     fetchData();
@@ -38,16 +29,7 @@ export default function FavouriteRecipes() {
 
   const indexOfLastRecipe = currentPage * recipesPerPage;
   const indexOfFirstRecipe = indexOfLastRecipe - recipesPerPage;
-  //   const currentRecipe = data.slice(indexOfFirstRecipe, indexOfLastRecipe);
-  var currentRecipe = [];
-  if (Array.isArray(data)) {
-    // Use slice method only if data is an array
-    currentRecipe = data.slice(indexOfFirstRecipe, indexOfLastRecipe);
-  } else {
-    // Handle the case when data is not an array or is undefined
-    // For example, you can set currentRecipe to an empty array or handle it accordingly based on your use case.
-    currentRecipe = [];
-  }
+  const currentRecipe = data.slice(indexOfFirstRecipe, indexOfLastRecipe);
 
   const handlePageChange = (pageNumber) => {
     setCurrentPage(pageNumber);
@@ -63,7 +45,21 @@ export default function FavouriteRecipes() {
 
   const totalPages = Math.ceil(data.length / recipesPerPage);
 
-  const handleRemoveFavorite = () => {};
+  const handleRemoveFavorite = async (id) => {
+    if (author) {
+      try {
+        const res = await axios.delete(
+          `http://localhost:4000/api/favorites/${author}`,
+          { data: { recipeId: id } }
+        );
+        setData((prevData) => prevData.filter((recipe) => recipe._id !== id));
+
+        console.log("recipe removed from favorite: ", res);
+      } catch (e) {
+        console.log("could not remove recipe from favorite: ", e);
+      }
+    }
+  };
 
   const RecipeCards = currentRecipe.map((recipe) => {
     return (
