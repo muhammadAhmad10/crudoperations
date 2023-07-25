@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { Pagination } from "react-bootstrap";
 import axios from "axios";
+import Loader from "./Loader";
 
 export default function FavouriteRecipes() {
   const [data, setData] = useState([]);
@@ -9,12 +10,15 @@ export default function FavouriteRecipes() {
   const [recipesPerPage] = useState(4);
   const location = useLocation();
   const [author, setAuthor] = useState(null);
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     setAuthor(JSON.parse(localStorage.getItem("author")));
   }, [location.pathname]);
 
   useEffect(() => {
+    setLoading(true);
+
     const fetchData = async () => {
       if (author) {
         const res = await axios.get(
@@ -22,6 +26,7 @@ export default function FavouriteRecipes() {
         );
         const responseData = await res.data.recipes;
         setData(responseData);
+        setLoading(false);
       }
     };
     fetchData();
@@ -110,40 +115,46 @@ export default function FavouriteRecipes() {
 
   return (
     <div className="showRecipe">
-      <h1 className="text-light">Recipes</h1>
-      <div className=" recipies d-flex flex-row flex-wrap justify-content-center align-items-center pb-2">
-        {RecipeCards}
-      </div>
-      <div className="pb-3">
-        <Pagination className="mt-4 d-flex flex-wrap justify-content-center">
-          <Pagination.Prev
-            onClick={handlePreviousPage}
-            disabled={currentPage === 1}
-          >
-            Prev
-          </Pagination.Prev>
-          {Array.from(
-            {
-              length: totalPages,
-            },
-            (_, index) => (
-              <Pagination.Item
-                key={index + 1}
-                active={index + 1 === currentPage}
-                onClick={() => handlePageChange(index + 1)}
+      {loading ? (
+        <Loader />
+      ) : (
+        <>
+          <h1 className="text-light">Recipes</h1>
+          <div className=" recipies d-flex flex-row flex-wrap justify-content-center align-items-center pb-2">
+            {RecipeCards}
+          </div>
+          <div className="pb-3">
+            <Pagination className="mt-4 d-flex flex-wrap justify-content-center">
+              <Pagination.Prev
+                onClick={handlePreviousPage}
+                disabled={currentPage === 1}
               >
-                {index + 1}
-              </Pagination.Item>
-            )
-          )}
-          <Pagination.Next
-            onClick={handleNextPage}
-            disabled={currentPage === totalPages}
-          >
-            Next
-          </Pagination.Next>
-        </Pagination>
-      </div>
+                Prev
+              </Pagination.Prev>
+              {Array.from(
+                {
+                  length: totalPages,
+                },
+                (_, index) => (
+                  <Pagination.Item
+                    key={index + 1}
+                    active={index + 1 === currentPage}
+                    onClick={() => handlePageChange(index + 1)}
+                  >
+                    {index + 1}
+                  </Pagination.Item>
+                )
+              )}
+              <Pagination.Next
+                onClick={handleNextPage}
+                disabled={currentPage === totalPages}
+              >
+                Next
+              </Pagination.Next>
+            </Pagination>
+          </div>
+        </>
+      )}
     </div>
   );
 }

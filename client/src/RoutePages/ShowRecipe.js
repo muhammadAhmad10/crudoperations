@@ -4,8 +4,7 @@ import { useEffect, useState } from "react";
 import axios from "axios";
 import { Link } from "react-router-dom";
 import { Pagination } from "react-bootstrap";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faHeart } from "@fortawesome/free-solid-svg-icons";
+import Loader from "./Loader";
 
 export default function ShowRecipe() {
   const [data, setData] = useState([]);
@@ -17,6 +16,8 @@ export default function ShowRecipe() {
   const [userDataFetched, setUserDataFetched] = useState(false);
   const [disableButton, setDisableButton] = useState(false);
   const [recipeDeleted, setRecipeDeleted] = useState(false);
+
+  const [loading, setLoading] = useState(false);
 
   const [currentPage, setCurrentPage] = useState(1);
   const [recipesPerPage] = useState(6);
@@ -58,7 +59,7 @@ export default function ShowRecipe() {
       } else {
         url = "http://localhost:8000/api/recipes";
       }
-
+      setLoading(true);
       axios.get(url).then((res) => {
         if (db === "mongodb") {
           setOwnerData(res.data.filter((recipe) => recipe.author === author));
@@ -69,6 +70,7 @@ export default function ShowRecipe() {
         }
         setUserDataFetched(true); // Mark user data as fetched to avoid fetching again
       });
+      setLoading(false);
       setRecipeDeleted(false);
     }
   }, [location.pathname, db, userDataFetched, recipeDeleted]);
@@ -81,6 +83,7 @@ export default function ShowRecipe() {
       url = "http://localhost:8000/api/recipes";
     }
     if (db) {
+      setLoading(true);
       axios.get(url).then((res) => {
         if (db === "mongodb") {
           setData(res.data);
@@ -89,7 +92,7 @@ export default function ShowRecipe() {
           setData(res.data.data);
           localStorage.setItem("sqliteData", JSON.stringify(res.data.data));
         }
-
+        setLoading(false);
         if (author) {
           if (db === "mongodb") {
             setOwnerData(res.data.filter((recipe) => recipe.author === author));
@@ -125,7 +128,6 @@ export default function ShowRecipe() {
 
   const handleFavorite = async (id) => {
     console.log("favorite", author, " id: ", id);
-
     try {
       const response = await axios.post(
         `http://localhost:4000/api/favorites/${author}`,
@@ -239,42 +241,46 @@ export default function ShowRecipe() {
 
   return (
     <div className="showRecipe">
-      <h1 className="text-light">Recipes</h1>
-      <div className=" recipies d-flex flex-row flex-wrap justify-content-center align-items-center pb-2">
-        {author && location.pathname === "/myRecipes"
-          ? RecipeCardsOwner
-          : RecipeCards}
-      </div>
-      <div className="pb-3">
-        <Pagination className="mt-4 d-flex flex-wrap justify-content-center">
-          <Pagination.Prev
-            onClick={handlePreviousPage}
-            disabled={currentPage === 1}
-          >
-            Prev
-          </Pagination.Prev>
-          {Array.from(
-            {
-              length: totalPages,
-            },
-            (_, index) => (
-              <Pagination.Item
-                key={index + 1}
-                active={index + 1 === currentPage}
-                onClick={() => handlePageChange(index + 1)}
+      {loading ? (
+        <Loader />
+      ) : (
+        <>
+          <h1 className="text-light">Recipes</h1>
+          <div className=" recipies d-flex flex-row flex-wrap justify-content-center align-items-center pb-2">
+            {author && location.pathname === "/myRecipes"
+              ? RecipeCardsOwner
+              : RecipeCards}
+          </div>
+          <div className="pb-3">
+            <Pagination className="mt-4 d-flex flex-wrap justify-content-center">
+              <Pagination.Prev
+                onClick={handlePreviousPage}
+                disabled={currentPage === 1}
               >
-                {index + 1}
-              </Pagination.Item>
-            )
-          )}
-          <Pagination.Next
-            onClick={handleNextPage}
-            disabled={currentPage === totalPages}
-          >
-            Next
-          </Pagination.Next>
-        </Pagination>
-        {/* <div className="card" style={{ width: "18rem", margin: "10px" }}>
+                Prev
+              </Pagination.Prev>
+              {Array.from(
+                {
+                  length: totalPages,
+                },
+                (_, index) => (
+                  <Pagination.Item
+                    key={index + 1}
+                    active={index + 1 === currentPage}
+                    onClick={() => handlePageChange(index + 1)}
+                  >
+                    {index + 1}
+                  </Pagination.Item>
+                )
+              )}
+              <Pagination.Next
+                onClick={handleNextPage}
+                disabled={currentPage === totalPages}
+              >
+                Next
+              </Pagination.Next>
+            </Pagination>
+            {/* <div className="card" style={{ width: "18rem", margin: "10px" }}>
           <div className="card-body">
             <h5 className="card-title">Recipie title</h5>
             <h6 className="card-subtitle mb-2 text-muted">Card subtitle</h6>
@@ -306,7 +312,9 @@ export default function ShowRecipe() {
             </a>
           </div>
         </div> */}
-      </div>
+          </div>
+        </>
+      )}
     </div>
   );
 }
