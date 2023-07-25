@@ -68,7 +68,7 @@ const db = new sqlite3.Database(database, async (err) => {
 
     try {
       await createTable();
-      await insertData();
+      // await insertData();
     } catch (err) {
       console.log("Error occurred: ", err);
     }

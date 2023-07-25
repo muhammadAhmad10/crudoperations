@@ -49,7 +49,10 @@ export default function EditRecipe() {
 
   const handleEdit = async (e) => {
     e.preventDefault();
+    setDisableButton(true);
+
     if (updatedRecipe) {
+      console.log("updated recipe: ", updatedRecipe);
       try {
         var url = ``;
         if (db === "mongodb") {
@@ -57,11 +60,14 @@ export default function EditRecipe() {
         } else {
           url += `http://localhost:8000/api/recipes/${updatedRecipe._id}`;
         }
-        setDisableButton(true);
+        console.log(url);
         axios.put(url, updatedRecipe);
-        navigate("/myRecipes");
-        setDisableButton(false);
-        // console.log("successfully updated: ", res);
+        localStorage.setItem("edited", JSON.stringify(true));
+        setTimeout(() => {
+          setDisableButton(false);
+          navigate("/myRecipes");
+        }, 2000);
+        console.log("successfully updated: ");
       } catch (err) {
         console.log("error occured: ", err);
       }

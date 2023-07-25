@@ -28,40 +28,7 @@ export default function AddRecipe() {
       ...recipe,
       image: file,
     });
-    // setImage(file);
-    // console.log(file);
   };
-
-  // useEffect(() => {
-  //   if (image) {
-  //     const uploadTask = storageRef.child(`recipes/${image.name}`).put(image);
-
-  //     uploadTask.on(
-  //       "state_changed",
-  //       // (snapshot) => {
-  //       //   // Progress monitoring (optional)
-  //       //   const progress =
-  //       //     (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
-  //       //   console.log("Upload is " + progress + "% done");
-  //       // },
-  //       (error) => {
-  //         // Error handling
-  //         console.log(error);
-  //       },
-  //       async () => {
-  //         // Upload success
-  //         await uploadTask.snapshot.ref.getDownloadURL().then((downloadURL) => {
-  //           // console.log("File available at", downloadURL);
-  //           setRecipe((recip) => ({
-  //             ...recip,
-  //             image: downloadURL,
-  //           }));
-  //           setDownloadURL(downloadURL);
-  //         });
-  //       }
-  //     );
-  //   }
-  // }, [image]);
 
   const handleOptionChange = async (e) => {
     setSelectedOption(e);
@@ -122,8 +89,11 @@ export default function AddRecipe() {
               "Content-Type": "multipart/form-data", // Set the correct content type for form data
             },
           });
-          setDisableButton(false);
-          navigate("/myRecipes", { state: recipe });
+          localStorage.setItem("added", JSON.stringify(true));
+          setTimeout(() => {
+            setDisableButton(false);
+            navigate("/myRecipes", { state: recipe });
+          }, 2000);
         } catch {
           alert("Error while uploading data");
         }

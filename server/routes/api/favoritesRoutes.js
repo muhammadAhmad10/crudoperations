@@ -16,14 +16,40 @@ router.get("/", async (req, res) => {
 // Get favorites for a specific user
 router.get("/:userEmail", async (req, res) => {
   const userEmail = req.params.userEmail;
+  const { page, limit } = req.query;
+  const pageNumber = parseInt(page) || 1;
+  const itemsPerPage = parseInt(limit) || 10;
+
   try {
-    const favorite = await Favorite.findOne({ user: userEmail }).populate(
-      "recipes"
-    );
-    res.json(favorite);
-  } catch (err) {
-    res.status(500).json({ message: "Error fetching favorites", error: err });
+    // Fetch paginated data from the database
+    const recipes = await Favorite.findOne({ user: userEmail })
+      .populate("recipes")
+      .skip((pageNumber - 1) * itemsPerPage)
+      .limit(itemsPerPage);
+
+    // Get the total count of recipes for pagination
+    const totalCount = await Favorite.countDocuments({
+      user: userEmail,
+    }).populate("recipes");
+
+    const totalPages = Math.ceil(totalCount / itemsPerPage);
+
+    res.json({
+      data: recipes,
+      totalPages,
+    });
+  } catch (error) {
+    console.log("Error fetching data:", error);
+    res.status(500).json({ message: "Error fetching data" });
   }
+  // try {
+  //   const favorite = await Favorite.findOne({ user: userEmail }).populate(
+  //     "recipes"
+  //   );
+  //   res.json(favorite);
+  // } catch (err) {
+  //   res.status(500).json({ message: "Error fetching favorites", error: err });
+  // }
 });
 
 // Add a recipe to favorites for a specific user

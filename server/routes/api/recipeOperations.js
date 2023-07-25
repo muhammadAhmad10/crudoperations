@@ -16,8 +16,64 @@ const upload = multer({ storage: multer.memoryStorage() });
 
 // Get all recipes
 router.get("/", async (req, res) => {
-  const recipes = await Recipe.find();
-  res.json(recipes);
+  const { page, limit } = req.query;
+  const pageNumber = parseInt(page) || 1;
+  const itemsPerPage = parseInt(limit) || 10;
+
+  try {
+    // Fetch paginated data from the database
+    const recipes = await Recipe.find()
+      .skip((pageNumber - 1) * itemsPerPage)
+      .limit(itemsPerPage);
+
+    // Get the total count of recipes for pagination
+    const totalCount = await Recipe.countDocuments();
+
+    const totalPages = Math.ceil(totalCount / itemsPerPage);
+
+    res.json({
+      data: recipes,
+      totalPages,
+    });
+  } catch (error) {
+    console.log("Error fetching data:", error);
+    res.status(500).json({ message: "Error fetching data" });
+  }
+
+  // const recipes = await Recipe.find();
+  // res.json(recipes);
+});
+
+//Get recipes of loged user
+router.get("/:userEmail", async (req, res) => {
+  const { page, limit } = req.query;
+  const pageNumber = parseInt(page) || 1;
+  const itemsPerPage = parseInt(limit) || 10;
+
+  try {
+    // Fetch paginated data from the database
+    const recipes = await Recipe.find({ author: req.params.userEmail })
+      .skip((pageNumber - 1) * itemsPerPage)
+      .limit(itemsPerPage);
+
+    // Get the total count of recipes for pagination
+    const totalCount = await Recipe.countDocuments({
+      author: req.params.userEmail,
+    });
+
+    const totalPages = Math.ceil(totalCount / itemsPerPage);
+
+    res.json({
+      data: recipes,
+      totalPages,
+    });
+  } catch (error) {
+    console.log("Error fetching data:", error);
+    res.status(500).json({ message: "Error fetching data" });
+  }
+
+  // const recipes = await Recipe.find();
+  // res.json(recipes);
 });
 
 console.log("mongodb route handler file");

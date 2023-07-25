@@ -16,18 +16,94 @@ const upload = multer({ storage: multer.memoryStorage() });
 
 // Get all recipes
 router.get("/", (req, res, next) => {
-  var sql = "select * from recipes";
-  var params = [];
-  db.all(sql, params, (err, rows) => {
-    if (err) {
-      res.status(400).json({ error: err.message });
-      return;
-    }
-    res.json({
-      message: "success",
-      data: rows,
+  const { page, limit } = req.query;
+
+  const pageNumber = parseInt(page) || 1;
+  const itemsPerPage = parseInt(limit) || 10;
+  const offset = (pageNumber - 1) * itemsPerPage;
+
+  try {
+    const query = `SELECT * FROM recipes LIMIT ? OFFSET ?`;
+    db.all(query, [itemsPerPage, offset], (err, recipes) => {
+      if (err) {
+        console.log("Error fetching data:", err);
+        return res.status(500).json({ message: "Error fetching data" });
+      }
+
+      const totalCountQuery = `SELECT COUNT(*) as count FROM recipes`;
+      db.get(totalCountQuery, [], (err, row) => {
+        if (err) {
+          console.log("Error fetching total count:", err);
+          return res.status(500).json({ message: "Error fetching data" });
+        }
+
+        const totalCount = row.count;
+        const totalPages = Math.ceil(totalCount / itemsPerPage);
+
+        res.json({
+          data: recipes,
+          totalPages,
+        });
+      });
     });
-  });
+  } catch (error) {
+    console.log("Error:", error);
+    res.status(500).json({ message: "Error fetching data" });
+  }
+
+  // var sql = "select * from recipes";
+  // var params = [];
+  // db.all(sql, params, (err, rows) => {
+  //   if (err) {
+  //     res.status(400).json({ error: err.message });
+  //     return;
+  //   }
+  //   res.json({
+  //     message: "success",
+  //     data: rows,
+  //   });
+  // });
+});
+
+//Get the recipes of loged user
+router.get("/:userEmail", (req, res, next) => {
+  const { page, limit } = req.query;
+  const pageNumber = parseInt(page) || 1;
+  const itemsPerPage = parseInt(limit) || 10;
+  const offset = (pageNumber - 1) * itemsPerPage;
+
+  try {
+    const query = `SELECT * FROM recipes WHERE author = ? LIMIT ? OFFSET ?`;
+    db.all(
+      query,
+      [req.params.userEmail, itemsPerPage, offset],
+      (err, recipes) => {
+        if (err) {
+          console.log("Error fetching data:", err);
+          return res.status(500).json({ message: "Error fetching data" });
+        }
+
+        const totalCountQuery = `SELECT COUNT(*) as count FROM recipes WHERE author = ?`;
+        db.get(totalCountQuery, [req.params.userEmail], (err, row) => {
+          if (err) {
+            console.log("Error fetching total count:", err);
+            return res.status(500).json({ message: "Error fetching data" });
+          }
+
+          const totalCount = row.count;
+          const totalPages = Math.ceil(totalCount / itemsPerPage);
+
+          res.json({
+            data: recipes,
+            totalPages,
+          });
+        });
+      }
+    );
+  } catch (error) {
+    console.log("Error:", error);
+    res.status(500).json({ message: "Error fetching data" });
+  }
 });
 
 // Get a recipe by id

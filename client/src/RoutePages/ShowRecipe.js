@@ -16,19 +16,22 @@ export default function ShowRecipe() {
   const [userDataFetched, setUserDataFetched] = useState(false);
   const [disableButton, setDisableButton] = useState(false);
   const [recipeDeleted, setRecipeDeleted] = useState(false);
-
   const [loading, setLoading] = useState(false);
+  const [added, setAdded] = useState(false);
+  const [favoriteButtonText, setFavoriteButtonText] = useState("Add Favorite");
+  const [favorites, setFavorites] = useState([]);
 
   const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(0);
   const [recipesPerPage] = useState(6);
 
-  const indexOfLastRecipe = currentPage * recipesPerPage;
-  const indexOfFirstRecipe = indexOfLastRecipe - recipesPerPage;
-  const currentRecipe = data.slice(indexOfFirstRecipe, indexOfLastRecipe);
-  const currentOwnerRecipe = ownerData.slice(
-    indexOfFirstRecipe,
-    indexOfLastRecipe
-  );
+  // const indexOfLastRecipe = currentPage * recipesPerPage;
+  // const indexOfFirstRecipe = indexOfLastRecipe - recipesPerPage;
+  // const currentRecipe = data.slice(indexOfFirstRecipe, indexOfLastRecipe);
+  // const currentOwnerRecipe = ownerData.slice(
+  //   indexOfFirstRecipe,
+  //   indexOfLastRecipe
+  // );
 
   const handlePageChange = (pageNumber) => {
     setCurrentPage(pageNumber);
@@ -42,70 +45,130 @@ export default function ShowRecipe() {
     setCurrentPage((currentPage) => currentPage + 1);
   };
 
-  const totalPages =
-    location.pathname === "/myRecipes"
-      ? Math.ceil(ownerData.length / recipesPerPage)
-      : Math.ceil(data.length / recipesPerPage);
+  // useEffect(() => {
+  //   fetchData();
+  // }, [currentPage]);
+
+  // const fetchData = async () => {
+  //   try {
+  //     const response = await axios.get(
+  //       `http://localhost:4000/api/recipes?page=${currentPage}&limit=${recipesPerPage}`
+  //     );
+  //     console.log("data from paginated mongo request: ", response.data.data);
+  //     setData(response.data.data);
+  //     setTotalPages(response.data.totalPages);
+  //   } catch (error) {
+  //     console.log("Error fetching data:", error);
+  //   }
+  // };
+
+  // const totalPages =
+  //   location.pathname === "/myRecipes"
+  //     ? Math.ceil(ownerData.length / recipesPerPage)
+  //     : Math.ceil(data.length / recipesPerPage);
 
   useEffect(() => {
     setAuthor(JSON.parse(localStorage.getItem("author")));
+    setTotalPages(0);
   }, [location.pathname]);
 
   useEffect(() => {
-    if (!userDataFetched && db && author) {
-      var url = "";
-      if (db === "mongodb") {
-        url = "http://localhost:4000/api/recipes";
-      } else {
-        url = "http://localhost:8000/api/recipes";
-      }
-      setLoading(true);
-      axios.get(url).then((res) => {
-        if (db === "mongodb") {
-          setOwnerData(res.data.filter((recipe) => recipe.author === author));
-        } else {
-          setOwnerData(
-            res.data.data.filter((recipe) => recipe.author === author)
-          );
-        }
-        setUserDataFetched(true); // Mark user data as fetched to avoid fetching again
-      });
-      setLoading(false);
-      setRecipeDeleted(false);
-    }
-  }, [location.pathname, db, userDataFetched, recipeDeleted]);
+    setAdded(JSON.parse(localStorage.getItem("edited")));
+  }, []);
 
   useEffect(() => {
-    var url = "";
-    if (db === "mongodb") {
-      url = "http://localhost:4000/api/recipes";
-    } else {
-      url = "http://localhost:8000/api/recipes";
-    }
-    if (db) {
-      setLoading(true);
-      axios.get(url).then((res) => {
+    // setTotalPages(0);
+    console.log("first useEffect to fetch data.", added);
+    console.log(db, author, location.pathname || added);
+    const getData = async () => {
+      if (db && author && location.pathname === "/myRecipes") {
+        var url = "";
         if (db === "mongodb") {
-          setData(res.data);
-          localStorage.setItem("mongoData", JSON.stringify(res.data));
+          url = `http://localhost:4000/api/recipes/${author}?page=${currentPage}&limit=${recipesPerPage}`;
         } else {
-          setData(res.data.data);
-          localStorage.setItem("sqliteData", JSON.stringify(res.data.data));
+          url = `http://localhost:8000/api/recipes/${author}?page=${currentPage}&limit=${recipesPerPage}`;
         }
-        setLoading(false);
-        if (author) {
+        setLoading(true);
+        console.log(url);
+        await axios.get(url).then((res) => {
           if (db === "mongodb") {
-            setOwnerData(res.data.filter((recipe) => recipe.author === author));
+            console.log(
+              "data is: ",
+              db,
+              res.data.data,
+              "and added is: ",
+              added
+            );
+            setOwnerData(
+              res.data.data.filter((recipe) => recipe.author === author)
+            );
+            setTotalPages(res.data.totalPages);
           } else {
             setOwnerData(
               res.data.data.filter((recipe) => recipe.author === author)
             );
+            setTotalPages(res.data.totalPages);
           }
-          setUserDataFetched(true);
+          setUserDataFetched(true); // Mark user data as fetched to avoid fetching again
+        });
+        setLoading(false);
+        setRecipeDeleted(false);
+        localStorage.setItem("edited", JSON.stringify(false));
+      }
+    };
+    getData();
+  }, [recipeDeleted, currentPage, location.pathname, db, author, added]);
+  //location.pathname, db, userDataFetched,
+
+  useEffect(() => {
+    console.log("second useEffect to fetch data.");
+
+    var url = "";
+    if (db === "mongodb") {
+      url = `http://localhost:4000/api/recipes?page=${currentPage}&limit=${recipesPerPage}`;
+    } else {
+      url = `http://localhost:8000/api/recipes?page=${currentPage}&limit=${recipesPerPage}`;
+    }
+    if (db && location.pathname === "/") {
+      setLoading(true);
+      axios.get(url).then((response) => {
+        if (db === "mongodb") {
+          console.log(
+            "data from paginated mongo request: ",
+            response.data.data
+          );
+          setData(response.data.data);
+          setTotalPages(response.data.totalPages);
+          localStorage.setItem("mongoData", JSON.stringify(response.data.data));
+        } else {
+          console.log(
+            "data from paginated sqlite request: ",
+            response.data.data
+          );
+
+          setData(response.data.data);
+          setTotalPages(response.data.totalPages);
+          localStorage.setItem(
+            "sqliteData",
+            JSON.stringify(response.data.data)
+          );
         }
+        setLoading(false);
+        // if (author) {
+        //   if (db === "mongodb") {
+        //     setOwnerData(
+        //       response.data.data.filter((recipe) => recipe.author === author)
+        //     );
+        //   } else {
+        //     setOwnerData(
+        //       response.data.data.filter((recipe) => recipe.author === author)
+        //     );
+        //   }
+        //   setUserDataFetched(true);
+        // }
       });
     }
-  }, [db, location.pathname, author, recipeDeleted]);
+  }, [db, location.pathname, author, recipeDeleted, currentPage, added]);
 
   const handleDelete = async (id) => {
     console.log(db);
@@ -126,20 +189,64 @@ export default function ShowRecipe() {
     }
   };
 
+  //Handling the favorites part
+  useEffect(() => {
+    setLoading(true);
+
+    const fetchData = async () => {
+      console.log("fetching favorites list", author);
+      if (author) {
+        const res = await axios.get(
+          `http://localhost:4000/api/favorites/${author}`
+        );
+
+        const responseData = await res.data.data.recipes;
+        console.log("response data is: ", responseData);
+        setFavorites(responseData);
+        setLoading(false);
+      }
+    };
+    fetchData();
+  }, [favoriteButtonText, location.pathname, author]);
+
   const handleFavorite = async (id) => {
-    console.log("favorite", author, " id: ", id);
-    try {
-      const response = await axios.post(
-        `http://localhost:4000/api/favorites/${author}`,
-        { id }
-      );
-      console.log("added to favorites: ", response.data);
-    } catch (error) {
-      console.log("error adding to favorites: ", error);
+    const favs = favorites.filter((fav) => {
+      return !fav["_id"] !== String(id);
+    });
+    setDisableButton(true);
+    if (!favs) {
+      try {
+        const response = await axios.post(
+          `http://localhost:4000/api/favorites/${author}`,
+          { id }
+        );
+        setDisableButton(false);
+        setFavoriteButtonText("Remove");
+        console.log("added to favorites: ", response.data);
+      } catch (error) {
+        console.log("error adding to favorites: ", error);
+      }
+    } else {
+      //remove from favorite list
+      setDisableButton(true);
+
+      try {
+        const res = await axios.delete(
+          `http://localhost:4000/api/favorites/${author}`,
+          { data: { recipeId: id } }
+        );
+        setDisableButton(false);
+        setFavoriteButtonText("Add Favorite");
+        console.log("recipe removed from favorite: ", res);
+      } catch (e) {
+        console.log("could not remove recipe from favorite: ", e);
+      }
     }
   };
 
-  const RecipeCards = currentRecipe.map((recipe) => {
+  const RecipeCards = data.map((recipe) => {
+    const isFavorite = favorites.some((fav) => fav._id === recipe._id);
+
     return (
       <div
         key={recipe._id}
@@ -170,7 +277,7 @@ export default function ShowRecipe() {
                   style={{ marginRight: "-15px" }}
                   className="btn btn-secondary pt-1 pb-1"
                 >
-                  Add Favorite
+                  {isFavorite ? "Remove" : "Add Favorite"}
                 </button>
               ) : null}
             </div>
@@ -189,7 +296,7 @@ export default function ShowRecipe() {
     );
   });
 
-  const RecipeCardsOwner = currentOwnerRecipe.map((recipe) => {
+  const RecipeCardsOwner = ownerData.map((recipe) => {
     return (
       <div
         key={recipe._id}
@@ -250,6 +357,7 @@ export default function ShowRecipe() {
             {author && location.pathname === "/myRecipes"
               ? RecipeCardsOwner
               : RecipeCards}
+            {/* {RecipeCards} */}
           </div>
           <div className="pb-3">
             <Pagination className="mt-4 d-flex flex-wrap justify-content-center">
@@ -280,38 +388,6 @@ export default function ShowRecipe() {
                 Next
               </Pagination.Next>
             </Pagination>
-            {/* <div className="card" style={{ width: "18rem", margin: "10px" }}>
-          <div className="card-body">
-            <h5 className="card-title">Recipie title</h5>
-            <h6 className="card-subtitle mb-2 text-muted">Card subtitle</h6>
-            <p className="card-text">
-              Some quick example text to build on the card title and make up the
-              bulk of the card's content.
-            </p>
-            <Link to="/editRecipe" className="card-link btn btn-primary">
-              Edit Recipe
-            </Link>
-            <a href="#" className="card-link btn btn-danger">
-              Delete Recipe
-            </a>
-          </div>
-        </div>
-        <div className="card" style={{ width: "18rem", margin: "10px" }}>
-          <div className="card-body">
-            <h5 className="card-title">Recipie title</h5>
-            <h6 className="card-subtitle mb-2 text-muted">Card subtitle</h6>
-            <p className="card-text">
-              Some quick example text to build on the card title and make up the
-              bulk of the card's content.
-            </p>
-            <Link to="/editRecipe" className="card-link btn btn-primary">
-              Edit Recipe
-            </Link>
-            <a href="#" className="card-link btn btn-danger">
-              Delete Recipe
-            </a>
-          </div>
-        </div> */}
           </div>
         </>
       )}

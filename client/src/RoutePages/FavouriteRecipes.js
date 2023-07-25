@@ -11,6 +11,7 @@ export default function FavouriteRecipes() {
   const location = useLocation();
   const [author, setAuthor] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [totalPages, setTotalPages] = useState(0);
 
   useEffect(() => {
     setAuthor(JSON.parse(localStorage.getItem("author")));
@@ -24,7 +25,8 @@ export default function FavouriteRecipes() {
         const res = await axios.get(
           `http://localhost:4000/api/favorites/${author}`
         );
-        const responseData = await res.data.recipes;
+        const responseData = await res.data.data.recipes;
+        console.log(responseData);
         setData(responseData);
         setLoading(false);
       }
@@ -32,9 +34,9 @@ export default function FavouriteRecipes() {
     fetchData();
   }, [author, location.pathname]);
 
-  const indexOfLastRecipe = currentPage * recipesPerPage;
-  const indexOfFirstRecipe = indexOfLastRecipe - recipesPerPage;
-  const currentRecipe = data.slice(indexOfFirstRecipe, indexOfLastRecipe);
+  // const indexOfLastRecipe = currentPage * recipesPerPage;
+  // const indexOfFirstRecipe = indexOfLastRecipe - recipesPerPage;
+  // const currentRecipe = data.slice(indexOfFirstRecipe, indexOfLastRecipe);
 
   const handlePageChange = (pageNumber) => {
     setCurrentPage(pageNumber);
@@ -48,7 +50,7 @@ export default function FavouriteRecipes() {
     setCurrentPage((currentPage) => currentPage + 1);
   };
 
-  const totalPages = Math.ceil(data.length / recipesPerPage);
+  // const totalPages = Math.ceil(data.length / recipesPerPage);
 
   const handleRemoveFavorite = async (id) => {
     if (author) {
@@ -58,7 +60,7 @@ export default function FavouriteRecipes() {
           { data: { recipeId: id } }
         );
         setData((prevData) => prevData.filter((recipe) => recipe._id !== id));
-
+        setTotalPages(res.data.totalPages);
         console.log("recipe removed from favorite: ", res);
       } catch (e) {
         console.log("could not remove recipe from favorite: ", e);
@@ -66,7 +68,7 @@ export default function FavouriteRecipes() {
     }
   };
 
-  const RecipeCards = currentRecipe.map((recipe) => {
+  const RecipeCards = data.map((recipe) => {
     return (
       <div
         key={recipe._id}
