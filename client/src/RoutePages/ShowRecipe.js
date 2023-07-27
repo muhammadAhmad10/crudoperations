@@ -1,5 +1,5 @@
 import "../styles/showRecipe.css";
-import { useNavigate, useLocation, redirect } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { useEffect, useState } from "react";
 import axios from "axios";
 import { Link } from "react-router-dom";
@@ -24,14 +24,6 @@ export default function ShowRecipe() {
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(0);
   const [recipesPerPage] = useState(6);
-
-  // const indexOfLastRecipe = currentPage * recipesPerPage;
-  // const indexOfFirstRecipe = indexOfLastRecipe - recipesPerPage;
-  // const currentRecipe = data.slice(indexOfFirstRecipe, indexOfLastRecipe);
-  // const currentOwnerRecipe = ownerData.slice(
-  //   indexOfFirstRecipe,
-  //   indexOfLastRecipe
-  // );
 
   const handlePageChange = (pageNumber) => {
     setCurrentPage(pageNumber);
@@ -69,17 +61,14 @@ export default function ShowRecipe() {
 
   useEffect(() => {
     setAuthor(JSON.parse(localStorage.getItem("author")));
-    setTotalPages(0);
-  }, [location.pathname]);
+    setTotalPages(1);
+  }, [location.pathname, db]);
 
   useEffect(() => {
     setAdded(JSON.parse(localStorage.getItem("edited")));
   }, []);
 
   useEffect(() => {
-    // setTotalPages(0);
-    console.log("first useEffect to fetch data.", added);
-    console.log(db, author, location.pathname || added);
     const getData = async () => {
       if (db && author && location.pathname === "/myRecipes") {
         var url = "";
@@ -92,13 +81,6 @@ export default function ShowRecipe() {
         console.log(url);
         await axios.get(url).then((res) => {
           if (db === "mongodb") {
-            console.log(
-              "data is: ",
-              db,
-              res.data.data,
-              "and added is: ",
-              added
-            );
             setOwnerData(
               res.data.data.filter((recipe) => recipe.author === author)
             );
@@ -109,7 +91,7 @@ export default function ShowRecipe() {
             );
             setTotalPages(res.data.totalPages);
           }
-          setUserDataFetched(true); // Mark user data as fetched to avoid fetching again
+          setUserDataFetched(true);
         });
         setLoading(false);
         setRecipeDeleted(false);
@@ -117,57 +99,76 @@ export default function ShowRecipe() {
       }
     };
     getData();
-  }, [recipeDeleted, currentPage, location.pathname, db, author, added]);
+  }, [
+    recipeDeleted,
+    currentPage,
+    location.pathname,
+    db,
+    author,
+    added,
+    totalPages,
+  ]);
   //location.pathname, db, userDataFetched,
 
   useEffect(() => {
-    console.log("second useEffect to fetch data.");
-
-    var url = "";
-    if (db === "mongodb") {
-      url = `http://localhost:4000/api/recipes?page=${currentPage}&limit=${recipesPerPage}`;
+    const keyOfPagesData = db + currentPage;
+    const keyOfPages = db + "key";
+    const pages = JSON.parse(localStorage.getItem(keyOfPages));
+    const d = JSON.parse(localStorage.getItem(keyOfPagesData));
+    const dataOfCurrentPage = d.data;
+    if (dataOfCurrentPage !== null && pages == totalPages) {
+      setData(dataOfCurrentPage);
     } else {
-      url = `http://localhost:8000/api/recipes?page=${currentPage}&limit=${recipesPerPage}`;
-    }
-    if (db && location.pathname === "/") {
-      setLoading(true);
-      axios.get(url).then((response) => {
-        if (db === "mongodb") {
-          console.log(
-            "data from paginated mongo request: ",
-            response.data.data
-          );
+      var url = "";
+      if (db === "mongodb") {
+        url = `http://localhost:4000/api/recipes?page=${currentPage}&limit=${recipesPerPage}`;
+      } else {
+        url = `http://localhost:8000/api/recipes?page=${currentPage}&limit=${recipesPerPage}`;
+      }
+      if (db && location.pathname === "/") {
+        setLoading(true);
+        axios.get(url).then((response) => {
           setData(response.data.data);
           setTotalPages(response.data.totalPages);
-          localStorage.setItem("mongoData", JSON.stringify(response.data.data));
-        } else {
-          console.log(
-            "data from paginated sqlite request: ",
-            response.data.data
-          );
 
-          setData(response.data.data);
-          setTotalPages(response.data.totalPages);
           localStorage.setItem(
-            "sqliteData",
-            JSON.stringify(response.data.data)
+            keyOfPagesData,
+            JSON.stringify({
+              data: response.data.data,
+              currentPage: currentPage,
+            })
           );
-        }
+          localStorage.setItem(
+            keyOfPages,
+            JSON.stringify(response.data.totalPages)
+          );
+          setLoading(false);
+        });
+      }
+    }
+
+    const refresh = JSON.parse(localStorage.getItem("refresh"));
+    if (refresh && currentPage == pages) {
+      const lastPageUrl = `http://localhost:4000/api/recipes?page=${pages}&limit=${recipesPerPage}`;
+      axios.get(lastPageUrl).then((response) => {
+        const lastPageData = response.data.data;
+        setData(lastPageData);
+        setRecipeDeleted(false);
+        localStorage.setItem(
+          keyOfPagesData,
+          JSON.stringify({
+            data: lastPageData,
+            currentPage: pages,
+          })
+        );
         setLoading(false);
-        // if (author) {
-        //   if (db === "mongodb") {
-        //     setOwnerData(
-        //       response.data.data.filter((recipe) => recipe.author === author)
-        //     );
-        //   } else {
-        //     setOwnerData(
-        //       response.data.data.filter((recipe) => recipe.author === author)
-        //     );
-        //   }
-        //   setUserDataFetched(true);
-        // }
+        localStorage.setItem("edited", JSON.stringify(false));
+        localStorage.setItem("refresh", JSON.stringify(false));
+
+        setRecipeDeleted(false);
       });
     }
+    setAdded(JSON.parse(localStorage.getItem("edited")));
   }, [db, location.pathname, author, recipeDeleted, currentPage, added]);
 
   const handleDelete = async (id) => {
@@ -181,6 +182,7 @@ export default function ShowRecipe() {
     setDisableButton(true);
     try {
       const res = axios.delete(url);
+      localStorage.setItem("refresh", JSON.stringify(true));
       navigate("/myRecipes");
       setDisableButton(false);
       setRecipeDeleted(true);
@@ -192,16 +194,12 @@ export default function ShowRecipe() {
   //Handling the favorites part
   useEffect(() => {
     setLoading(true);
-
     const fetchData = async () => {
-      console.log("fetching favorites list", author);
       if (author) {
         const res = await axios.get(
           `http://localhost:4000/api/favorites/${author}`
         );
-
-        const responseData = await res.data.data.recipes;
-        console.log("response data is: ", responseData);
+        const responseData = await res.data.recipes;
         setFavorites(responseData);
         setLoading(false);
       }
@@ -213,33 +211,38 @@ export default function ShowRecipe() {
     const favs = favorites.filter((fav) => {
       return !fav["_id"] !== String(id);
     });
+    const containItem = favs.find((f) => {
+      return f["_id"] === String(id);
+    });
     setDisableButton(true);
-    if (!favs) {
+    if (!containItem) {
       try {
+        setFavoriteButtonText("Remove");
         const response = await axios.post(
           `http://localhost:4000/api/favorites/${author}`,
           { id }
         );
         setDisableButton(false);
-        setFavoriteButtonText("Remove");
-        console.log("added to favorites: ", response.data);
+        // console.log("added to favorites: ", response.data);
       } catch (error) {
         console.log("error adding to favorites: ", error);
+      } finally {
+        setFavoriteButtonText("Favorite");
       }
     } else {
-      //remove from favorite list
-      setDisableButton(true);
-
       try {
+        setFavoriteButtonText("Favorite");
+
         const res = await axios.delete(
           `http://localhost:4000/api/favorites/${author}`,
           { data: { recipeId: id } }
         );
         setDisableButton(false);
-        setFavoriteButtonText("Add Favorite");
-        console.log("recipe removed from favorite: ", res);
+        // console.log("recipe removed from favorite: ", res);
       } catch (e) {
         console.log("could not remove recipe from favorite: ", e);
+      } finally {
+        setFavoriteButtonText("Remove");
       }
     }
   };

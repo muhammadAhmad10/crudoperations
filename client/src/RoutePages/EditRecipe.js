@@ -63,6 +63,8 @@ export default function EditRecipe() {
         console.log(url);
         axios.put(url, updatedRecipe);
         localStorage.setItem("edited", JSON.stringify(true));
+        localStorage.setItem("refresh", JSON.stringify(true));
+
         setTimeout(() => {
           setDisableButton(false);
           navigate("/myRecipes");

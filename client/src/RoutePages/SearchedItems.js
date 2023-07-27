@@ -1,29 +1,21 @@
 import { useLocation, Link } from "react-router-dom";
 import { useEffect, useState } from "react";
+import axios from "axios";
 export default function SearchedItems() {
   const [data, setData] = useState([]);
   const location = useLocation();
   const searchText = location.state.searchText;
 
   useEffect(() => {
-    const localData = JSON.parse(localStorage.getItem("mongoData"));
-    const localSqliteData = JSON.parse(localStorage.getItem("sqliteData"));
-    const searchResult = localData.filter((recipe) => {
-      if (recipe["title"].toLowerCase().includes(searchText.toLowerCase())) {
-        return recipe;
-      }
-    });
-    const searchResultSqlite = localSqliteData.filter((recipe) => {
-      if (recipe["title"].toLowerCase().includes(searchText.toLowerCase())) {
-        return recipe;
-      }
-    });
-
-    const mergedResults = Array.from(
-      new Set([...searchResult, ...searchResultSqlite])
-    );
-
-    setData(mergedResults);
+    try {
+      axios
+        .get(`http://localhost:4000/api/recipes/search/${searchText}`)
+        .then((res) => {
+          setData(res.data);
+        });
+    } catch (err) {
+      console.log("Error searching data: ", err);
+    }
   }, [searchText]);
 
   const RecipeCards = data.map((recipe, index) => {

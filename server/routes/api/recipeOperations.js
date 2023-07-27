@@ -76,8 +76,6 @@ router.get("/:userEmail", async (req, res) => {
   // res.json(recipes);
 });
 
-console.log("mongodb route handler file");
-
 //Get recipe by id
 router.get("/:id", async (req, res) => {
   const recipe = await Recipe.findById(req.params.id);
@@ -86,17 +84,17 @@ router.get("/:id", async (req, res) => {
   res.json(recipe);
 });
 
-// //Get recipe by name
-// router.get("/:recipeTitle", async (req, res) => {
-//   console.log("huihuihuihui");
-//   console.log("req.params.recipeTitle: ", req.params.recipeTitle);
-//   const recipe = await Recipe.find({ title: req.params.recipeTitle });
-//   if (!recipe)
-//     return res
-//       .status(404)
-//       .send("The recipe with the given title was not found.");
-//   res.json(recipe);
-// });
+//Get recipe by name
+router.get("/search/:recipeTitle", async (req, res) => {
+  const recipe = await Recipe.find({
+    title: { $regex: req.params.recipeTitle.toLowerCase(), $options: "i" },
+  });
+  if (!recipe)
+    return res
+      .status(404)
+      .send("The recipe with the given title was not found.");
+  res.json(recipe);
+});
 
 //Post a recipe
 router.post("/", upload.single("image"), async (req, res) => {

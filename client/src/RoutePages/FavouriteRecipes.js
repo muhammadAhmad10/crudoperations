@@ -6,12 +6,13 @@ import Loader from "./Loader";
 
 export default function FavouriteRecipes() {
   const [data, setData] = useState([]);
-  const [currentPage, setCurrentPage] = useState(1);
-  const [recipesPerPage] = useState(4);
   const location = useLocation();
   const [author, setAuthor] = useState(null);
   const [loading, setLoading] = useState(false);
+
+  const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(0);
+  const [recipesPerPage] = useState(6);
 
   useEffect(() => {
     setAuthor(JSON.parse(localStorage.getItem("author")));
@@ -23,20 +24,16 @@ export default function FavouriteRecipes() {
     const fetchData = async () => {
       if (author) {
         const res = await axios.get(
-          `http://localhost:4000/api/favorites/${author}`
+          `http://localhost:4000/api/favorites/${author}/paginated?page=${currentPage}&limit=${recipesPerPage}`
         );
-        const responseData = await res.data.data.recipes;
-        console.log(responseData);
+        const responseData = await res.data.data;
         setData(responseData);
+        setTotalPages(res.data.totalPages);
         setLoading(false);
       }
     };
     fetchData();
-  }, [author, location.pathname]);
-
-  // const indexOfLastRecipe = currentPage * recipesPerPage;
-  // const indexOfFirstRecipe = indexOfLastRecipe - recipesPerPage;
-  // const currentRecipe = data.slice(indexOfFirstRecipe, indexOfLastRecipe);
+  }, [author, location.pathname, currentPage]);
 
   const handlePageChange = (pageNumber) => {
     setCurrentPage(pageNumber);
@@ -49,8 +46,6 @@ export default function FavouriteRecipes() {
   const handleNextPage = () => {
     setCurrentPage((currentPage) => currentPage + 1);
   };
-
-  // const totalPages = Math.ceil(data.length / recipesPerPage);
 
   const handleRemoveFavorite = async (id) => {
     if (author) {

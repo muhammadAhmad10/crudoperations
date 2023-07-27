@@ -89,7 +89,9 @@ export default function AddRecipe() {
               "Content-Type": "multipart/form-data", // Set the correct content type for form data
             },
           });
-          localStorage.setItem("added", JSON.stringify(true));
+          localStorage.setItem("edited", JSON.stringify(true));
+          localStorage.setItem("refresh", JSON.stringify(true));
+
           setTimeout(() => {
             setDisableButton(false);
             navigate("/myRecipes", { state: recipe });

@@ -1,4 +1,3 @@
-// routes/favoriteRoutes.js
 const express = require("express");
 const router = express.Router();
 const Favorite = require("../../models/favorites");
@@ -16,24 +15,44 @@ router.get("/", async (req, res) => {
 // Get favorites for a specific user
 router.get("/:userEmail", async (req, res) => {
   const userEmail = req.params.userEmail;
+
+  try {
+    const recipes = await Favorite.findOne({ user: userEmail }).populate(
+      "recipes"
+    );
+    res.json(recipes);
+  } catch (error) {
+    console.log("Error fetching data:", error);
+    res.status(500).json({ message: "Error fetching data" });
+  }
+});
+
+router.get("/:userEmail/paginated", async (req, res) => {
+  const userEmail = req.params.userEmail;
   const { page, limit } = req.query;
   const pageNumber = parseInt(page) || 1;
   const itemsPerPage = parseInt(limit) || 10;
 
   try {
-    // Fetch paginated data from the database
-    const recipes = await Favorite.findOne({ user: userEmail })
-      .populate("recipes")
-      .skip((pageNumber - 1) * itemsPerPage)
-      .limit(itemsPerPage);
+    // Find the user's favorite document and populate the 'recipes' field
+    const favorite = await Favorite.findOne({ user: userEmail }).populate(
+      "recipes"
+    );
 
-    // Get the total count of recipes for pagination
-    const totalCount = await Favorite.countDocuments({
-      user: userEmail,
-    }).populate("recipes");
+    if (!favorite) {
+      return res.status(404).json({ message: "User not found in favorites" });
+    }
+
+    // Get the total count of recipes for the user
+    const totalCount = favorite.recipes.length;
+
+    // Paginate the recipes manually
+    const startIndex = (pageNumber - 1) * itemsPerPage;
+    const endIndex = Math.min(startIndex + itemsPerPage, totalCount);
+    const recipes = favorite.recipes.slice(startIndex, endIndex);
 
     const totalPages = Math.ceil(totalCount / itemsPerPage);
-
+    console.log(totalPages);
     res.json({
       data: recipes,
       totalPages,
@@ -42,14 +61,6 @@ router.get("/:userEmail", async (req, res) => {
     console.log("Error fetching data:", error);
     res.status(500).json({ message: "Error fetching data" });
   }
-  // try {
-  //   const favorite = await Favorite.findOne({ user: userEmail }).populate(
-  //     "recipes"
-  //   );
-  //   res.json(favorite);
-  // } catch (err) {
-  //   res.status(500).json({ message: "Error fetching favorites", error: err });
-  // }
 });
 
 // Add a recipe to favorites for a specific user
