@@ -3,6 +3,7 @@ import "../styles/addEditRecipe.css";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import { Dropdown } from "react-bootstrap";
+import Swal from "sweetalert2";
 
 export default function AddRecipe() {
   const author = JSON.parse(localStorage.getItem("author"));
@@ -18,6 +19,19 @@ export default function AddRecipe() {
     image: null,
   });
   const navigate = useNavigate();
+
+  const Toast = Swal.mixin({
+    toast: true,
+    position: "top-right",
+    color: "white",
+    iconColor: "white",
+    customClass: {
+      popup: "colored-toast",
+    },
+    showConfirmButton: false,
+    timer: 1500,
+    timerProgressBar: true,
+  });
 
   const [selectedOption, setSelectedOption] = useState("Appetizers");
   const [disableButton, setDisableButton] = useState(false);
@@ -91,7 +105,11 @@ export default function AddRecipe() {
           });
           localStorage.setItem("edited", JSON.stringify(true));
           localStorage.setItem("refresh", JSON.stringify(true));
-
+          Toast.fire({
+            icon: "success",
+            title: "Success",
+            background: "#a5dc86",
+          });
           setTimeout(() => {
             setDisableButton(false);
             navigate("/myRecipes", { state: recipe });
@@ -101,7 +119,12 @@ export default function AddRecipe() {
         }
       }
     } else {
-      setErrorMessage("Please fill all fields or upload file");
+      await Toast.fire({
+        icon: "error",
+        title: "Error",
+        text: "Please fill out all fields!",
+        background: "#f27474",
+      });
     }
   };
 

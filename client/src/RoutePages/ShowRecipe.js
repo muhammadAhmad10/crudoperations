@@ -5,6 +5,7 @@ import axios from "axios";
 import { Link } from "react-router-dom";
 import { Pagination } from "react-bootstrap";
 import Loader from "./Loader";
+import Swal from "sweetalert2";
 
 export default function ShowRecipe() {
   const [data, setData] = useState([]);
@@ -181,31 +182,106 @@ export default function ShowRecipe() {
     }
     setDisableButton(true);
     try {
-      const res = axios.delete(url);
-      localStorage.setItem("refresh", JSON.stringify(true));
-      navigate("/myRecipes");
-      setDisableButton(false);
-      setRecipeDeleted(true);
+      Swal.fire({
+        title: "Are you sure?",
+        text: "You won't be able to revert this!",
+        icon: "warning",
+        showCancelButton: true,
+        confirmButtonColor: "#3085d6",
+        cancelButtonColor: "#d33",
+        confirmButtonText: "Yes, delete it!",
+        showClass: {
+          popup: "swal2-show",
+          backdrop: "swal2-backdrop-show",
+          icon: "swal2-icon-show",
+        },
+        hideClass: {
+          popup: "swal2-hide",
+          backdrop: "swal2-backdrop-hide",
+          icon: "swal2-icon-hide",
+        },
+      }).then((result) => {
+        if (result.isConfirmed) {
+          const res = axios.delete(url);
+
+          localStorage.setItem("refresh", JSON.stringify(true));
+          Swal.fire("Deleted!", "Recipe has been deleted.", "success");
+
+          if (
+            author === "admin@gmail.com" &&
+            location.pathname !== "/myRecipes"
+          ) {
+            navigate("/");
+          } else {
+            navigate("/myRecipes");
+          }
+
+          setDisableButton(false);
+          setRecipeDeleted(true);
+        } else {
+          setDisableButton(false);
+        }
+      });
+
+      //const res = axios.delete(url);
+      // localStorage.setItem("refresh", JSON.stringify(true));
+      // if (author === "admin@gmail.com" && location.pathname !== "/myRecipes") {
+      //   navigate("/");
+      // } else {
+      //   navigate("/myRecipes");
+      // }
+      // setDisableButton(false);
+      // setRecipeDeleted(true);
     } catch {
       console.log("could not delete");
     }
   };
 
   //Handling the favorites part
+  // useEffect(() => {
+  //   console.log("into useEffect of Handle Favorite");
+  //   // setLoading(true);
+  //   const fetchData = async () => {
+  //     if (author) {
+  //       const res = await axios.get(
+  //         `http://localhost:4000/api/favorites/${author}`
+  //       );
+  //       const responseData = await res.data.recipes;
+  //       setFavorites(responseData);
+  //       // setLoading(false);
+  //     }
+  //   };
+  //   fetchData();
+  // }, [favoriteButtonText]);
+
   useEffect(() => {
-    setLoading(true);
+    console.log("into useEffect of Handle Favorite");
+
     const fetchData = async () => {
       if (author) {
-        const res = await axios.get(
-          `http://localhost:4000/api/favorites/${author}`
-        );
-        const responseData = await res.data.recipes;
-        setFavorites(responseData);
-        setLoading(false);
+        try {
+          const res = await axios.get(
+            `http://localhost:4000/api/favorites/${author}`
+          );
+
+          // Check if res.data is not null before accessing recipes
+          if (res.data && res.data.recipes) {
+            const responseData = res.data.recipes;
+            setFavorites(responseData);
+          } else {
+            // If res.data is null or recipes are not available, set favorites to an empty array
+            setFavorites([]);
+          }
+        } catch (error) {
+          // Handle any errors that occurred during the API call
+          console.log("Error fetching favorites:", error);
+          setFavorites([]);
+        }
       }
     };
+
     fetchData();
-  }, [favoriteButtonText, location.pathname, author]);
+  }, [author, favoriteButtonText]);
 
   const handleFavorite = async (id) => {
     const favs = favorites.filter((fav) => {
@@ -292,6 +368,25 @@ export default function ShowRecipe() {
             >
               {recipe.title}
             </Link>
+            {author === "admin@gmail.com" ? (
+              <div className="d-flex">
+                <button
+                  className="card-link btn btn-primary"
+                  onClick={() => {
+                    navigate("/editRecipe", { state: { recipe, db } });
+                  }}
+                >
+                  Edit Recipe
+                </button>
+                <button
+                  disabled={disableButton}
+                  className="card-link btn btn-danger"
+                  onClick={() => handleDelete(recipe._id)}
+                >
+                  Delete Recipe
+                </button>
+              </div>
+            ) : null}
             <p className="card-text  author">{recipe.author}</p>
           </div>
         </div>

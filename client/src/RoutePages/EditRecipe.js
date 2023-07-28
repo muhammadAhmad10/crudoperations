@@ -3,6 +3,7 @@ import "../styles/addEditRecipe.css";
 import { useLocation, useNavigate } from "react-router-dom";
 import axios from "axios";
 import { Dropdown } from "react-bootstrap";
+import Swal from "sweetalert2";
 
 export default function EditRecipe() {
   const location = useLocation();
@@ -11,7 +12,20 @@ export default function EditRecipe() {
   const db = location.state.db;
   const [updatedRecipe, setUpdatedRecipe] = useState(recipe);
   const [disableButton, setDisableButton] = useState(false);
+  const author = JSON.parse(localStorage.getItem("author"));
 
+  const Toast = Swal.mixin({
+    toast: true,
+    position: "top-right",
+    color: "white",
+    iconColor: "white",
+    customClass: {
+      popup: "colored-toast",
+    },
+    showConfirmButton: false,
+    timer: 1500,
+    timerProgressBar: true,
+  });
   // const [selectedOption, setSelectedOption] = useState(recipe.category);
 
   const handleOptionChange = async (e) => {
@@ -64,14 +78,31 @@ export default function EditRecipe() {
         axios.put(url, updatedRecipe);
         localStorage.setItem("edited", JSON.stringify(true));
         localStorage.setItem("refresh", JSON.stringify(true));
-
+        Toast.fire({
+          icon: "success",
+          title: "Success",
+          background: "#a5dc86",
+        });
         setTimeout(() => {
           setDisableButton(false);
-          navigate("/myRecipes");
+          if (
+            author === "admin@gmail.com" &&
+            recipe.author !== "admin@gmail.com"
+          ) {
+            navigate("/");
+          } else {
+            navigate("/myRecipes");
+          }
         }, 2000);
         console.log("successfully updated: ");
       } catch (err) {
-        console.log("error occured: ", err);
+        Toast.fire({
+          icon: "error",
+          title: "Error",
+          text: "Error editing recipe!",
+          background: "#f27474",
+        });
+        // console.log("error occured: ", err);
       }
     }
   };

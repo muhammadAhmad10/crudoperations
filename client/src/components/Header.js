@@ -6,6 +6,7 @@ import axios from "axios";
 export default function Header() {
   const [data, setData] = useState([]);
   const [searchText, setSearchText] = useState("");
+  const author = JSON.parse(localStorage.getItem("author"));
 
   // useEffect(() => {
   //   setData(JSON.parse(localStorage.getItem("mongoData")));
@@ -20,10 +21,12 @@ export default function Header() {
     <div style={{ background: "rgb(252, 108, 92)" }}>
       <nav className="navbar">
         <div className="head container-fluid">
-          <Link className="nav-link title text-light disabled fs-5" to="/">
-            Recipe App
-          </Link>
-
+          <div className="adm">
+            <Link className="nav-link title text-light disabled fs-5" to="/">
+              Recipe App
+            </Link>
+            {author ? <p className="text-light">{author}</p> : null}
+          </div>
           <div className="search" id="navbarSupportedContent">
             <form className="d-flex">
               <input
