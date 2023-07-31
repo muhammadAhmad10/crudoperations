@@ -66,6 +66,10 @@ export default function ShowRecipe() {
   }, [location.pathname, db]);
 
   useEffect(() => {
+    setCurrentPage(1);
+  }, [location.pathname === "/myRecipes"]);
+
+  useEffect(() => {
     setAdded(JSON.parse(localStorage.getItem("edited")));
   }, []);
 

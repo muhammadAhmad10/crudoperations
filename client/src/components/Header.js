@@ -25,7 +25,7 @@ export default function Header() {
             <Link className="nav-link title text-light disabled fs-5" to="/">
               Recipe App
             </Link>
-            {author ? <p className="text-light">{author}</p> : null}
+            {author && <p className="text-light">{author}</p>}
           </div>
           <div className="search" id="navbarSupportedContent">
             <form className="d-flex">

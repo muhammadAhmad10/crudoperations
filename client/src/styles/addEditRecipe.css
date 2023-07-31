@@ -43,6 +43,7 @@
 @media screen and (max-width:570px) {
     .add-recipe {
         width: 90%;
+
     }
 
     .formContainer {
@@ -51,4 +52,10 @@
     }
 
 
+}
+
+@media screen and (max-width:300px) {
+    .formContainer {
+        height: 143vh;
+    }
 }
