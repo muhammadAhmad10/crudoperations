@@ -64,46 +64,86 @@ export default function EditRecipe() {
   const handleEdit = async (e) => {
     e.preventDefault();
     setDisableButton(true);
+    const missingFields = [];
+    console.log(updatedRecipe.title);
 
-    if (updatedRecipe) {
-      console.log("updated recipe: ", updatedRecipe);
-      try {
-        var url = ``;
-        if (db === "mongodb") {
-          url += `http://localhost:4000/api/recipes/${updatedRecipe._id}`;
-        } else {
-          url += `http://localhost:8000/api/recipes/${updatedRecipe._id}`;
-        }
-        console.log(url);
-        axios.put(url, updatedRecipe);
-        localStorage.setItem("edited", JSON.stringify(true));
-        localStorage.setItem("refresh", JSON.stringify(true));
-        Toast.fire({
-          icon: "success",
-          title: "Success",
-          background: "#a5dc86",
-        });
-        setTimeout(() => {
-          setDisableButton(false);
-          if (
-            author === "admin@gmail.com" &&
-            recipe.author !== "admin@gmail.com"
-          ) {
-            navigate("/");
+    if (!updatedRecipe.title) {
+      missingFields.push("Title");
+    }
+
+    if (!updatedRecipe.ingredients) {
+      missingFields.push("Ingredients");
+    }
+
+    if (!updatedRecipe.author) {
+      missingFields.push("Author");
+    }
+
+    if (!updatedRecipe.category) {
+      missingFields.push("Category");
+    }
+
+    if (!updatedRecipe.instructions) {
+      missingFields.push("Instructions");
+    }
+
+    if (!updatedRecipe.servings) {
+      missingFields.push("Servings");
+    }
+
+    if (!updatedRecipe.image) {
+      missingFields.push("Image");
+    }
+
+    if (missingFields.length === 0) {
+      if (updatedRecipe) {
+        console.log("updated recipe: ", updatedRecipe);
+        try {
+          var url = ``;
+          if (db === "mongodb") {
+            url += `http://localhost:4000/api/recipes/${updatedRecipe._id}`;
           } else {
-            navigate("/myRecipes");
+            url += `http://localhost:8000/api/recipes/${updatedRecipe._id}`;
           }
-        }, 2000);
-        console.log("successfully updated: ");
-      } catch (err) {
-        Toast.fire({
-          icon: "error",
-          title: "Error",
-          text: "Error editing recipe!",
-          background: "#f27474",
-        });
-        // console.log("error occured: ", err);
+          console.log(url);
+          axios.put(url, updatedRecipe);
+          localStorage.setItem("edited", JSON.stringify(true));
+          localStorage.setItem("refresh", JSON.stringify(true));
+          Toast.fire({
+            icon: "success",
+            title: "Success",
+            background: "#a5dc86",
+          });
+          setTimeout(() => {
+            setDisableButton(false);
+            if (
+              author === "admin@gmail.com" &&
+              recipe.author !== "admin@gmail.com"
+            ) {
+              navigate("/");
+            } else {
+              navigate("/myRecipes");
+            }
+          }, 2000);
+          console.log("successfully updated: ");
+        } catch (err) {
+          Toast.fire({
+            icon: "error",
+            title: "Error",
+            text: "Error editing recipe!",
+            background: "#f27474",
+          });
+          // console.log("error occured: ", err);
+        }
       }
+    } else {
+      setDisableButton(false);
+      await Toast.fire({
+        icon: "error",
+        title: "Error",
+        text: `Please enter the following fields: ${missingFields.join(", ")}`,
+        background: "#f27474",
+      });
     }
   };
 

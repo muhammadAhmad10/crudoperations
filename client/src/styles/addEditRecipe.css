@@ -21,7 +21,6 @@
     }
 
     .formContainer {
-        overflow-y: scroll;
 
         height: 110vh;
     }
@@ -35,7 +34,6 @@
     }
 
     .formContainer {
-        overflow-y: scroll;
 
         height: 88vh;
     }
@@ -58,16 +56,16 @@
 
     }
 
-    /* .formContainer {
+    .formContainer {
         overflow-y: inherit;
         height: 125vh;
-    } */
+    }
 
 
 }
 
-/* @media screen and (max-width:350px) {
+@media screen and (max-width:350px) {
     .formContainer {
         height: 143vh;
     }
-} */
+}

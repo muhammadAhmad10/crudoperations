@@ -9,12 +9,15 @@ export default function AddRecipe() {
   const author = JSON.parse(localStorage.getItem("author"));
   const db = JSON.parse(localStorage.getItem("db"));
   const [errorMessage, setErrorMessage] = useState("");
+  const [selectedOption, setSelectedOption] = useState("Appetizers");
+  const [disableButton, setDisableButton] = useState(false);
+
   const [recipe, setRecipe] = useState({
     title: "",
     ingredients: "",
     instructions: "",
     servings: "",
-    category: "",
+    category: selectedOption,
     author: author,
     image: null,
   });
@@ -33,15 +36,45 @@ export default function AddRecipe() {
     timerProgressBar: true,
   });
 
-  const [selectedOption, setSelectedOption] = useState("Appetizers");
-  const [disableButton, setDisableButton] = useState(false);
-
-  const handleImageChange = (e) => {
+  const handleImageChange = async (e) => {
     const file = e.target.files[0];
-    setRecipe({
-      ...recipe,
-      image: file,
-    });
+    const imageExtensions = [
+      "jpg",
+      "jpeg",
+      "png",
+      "gif",
+      "webp",
+      "tiff",
+      "psd",
+      "raw",
+    ];
+    const uploadedFileExtension = file.name.split(".")[1];
+    console.log(file);
+    const uploadedFileSize = file.size;
+    console.log(uploadedFileSize);
+    const isImage = imageExtensions.includes(uploadedFileExtension);
+    if (isImage && uploadedFileSize <= 512000) {
+      setRecipe({
+        ...recipe,
+        image: file,
+      });
+    } else {
+      if (isImage && uploadedFileSize >= 512000) {
+        await Toast.fire({
+          icon: "error",
+          title: "Error",
+          text: "Image size can be maximum 500KB!",
+          background: "#f27474",
+        });
+      } else {
+        await Toast.fire({
+          icon: "error",
+          title: "Error",
+          text: "You are allowed to upload image only!",
+          background: "#f27474",
+        });
+      }
+    }
   };
 
   const handleOptionChange = async (e) => {
@@ -78,17 +111,39 @@ export default function AddRecipe() {
   };
 
   const handleAdd = async (e) => {
-    // console.log("db is: ", db);
     e.preventDefault();
-    if (
-      recipe.title &&
-      recipe.ingredients &&
-      recipe.author &&
-      recipe.category &&
-      recipe.instructions &&
-      recipe.servings &&
-      recipe.image
-    ) {
+
+    const missingFields = [];
+
+    if (!recipe.title) {
+      missingFields.push("Title");
+    }
+
+    if (!recipe.ingredients) {
+      missingFields.push("Ingredients");
+    }
+
+    if (!recipe.author) {
+      missingFields.push("Author");
+    }
+
+    if (!recipe.category) {
+      missingFields.push("Category");
+    }
+
+    if (!recipe.instructions) {
+      missingFields.push("Instructions");
+    }
+
+    if (!recipe.servings) {
+      missingFields.push("Servings");
+    }
+
+    if (!recipe.image) {
+      missingFields.push("Image");
+    }
+
+    if (missingFields.length === 0) {
       setDisableButton(true);
       var url = "";
       if (db === "mongodb") {
@@ -98,31 +153,42 @@ export default function AddRecipe() {
       }
       if (db) {
         try {
-          axios.post(url, recipe, {
+          const response = await axios.post(url, recipe, {
             headers: {
               "Content-Type": "multipart/form-data", // Set the correct content type for form data
             },
           });
-          localStorage.setItem("edited", JSON.stringify(true));
-          localStorage.setItem("refresh", JSON.stringify(true));
+          console.log("response to post request is: ", response);
+          if (response.status === 200) {
+            localStorage.setItem("edited", JSON.stringify(true));
+            localStorage.setItem("refresh", JSON.stringify(true));
+            Toast.fire({
+              icon: "success",
+              title: "Success",
+              background: "#a5dc86",
+            });
+            setTimeout(() => {
+              setDisableButton(false);
+              navigate("/myRecipes", { state: recipe });
+            }, 2000);
+          }
+        } catch (error) {
+          setDisableButton(false);
+          console.log("error while posting the recipe: ", error);
+          console.log("erorr occured is: ", error.response);
           Toast.fire({
-            icon: "success",
-            title: "Success",
-            background: "#a5dc86",
+            icon: "error",
+            title: "Error",
+            text: error.message + ". Message: " + error.response.data,
+            background: "#f27474",
           });
-          setTimeout(() => {
-            setDisableButton(false);
-            navigate("/myRecipes", { state: recipe });
-          }, 2000);
-        } catch {
-          alert("Error while uploading data");
         }
       }
     } else {
       await Toast.fire({
         icon: "error",
         title: "Error",
-        text: "Please fill out all fields!",
+        text: `Please enter the following fields: ${missingFields.join(", ")}`,
         background: "#f27474",
       });
     }

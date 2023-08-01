@@ -1,3 +1,9 @@
+.db {
+    position: absolute;
+    top: 10px;
+    right: 5%;
+}
+
 .showRecipe {
     overflow-y: scroll;
     height: 90vh;
@@ -43,5 +49,11 @@
 
     .card button {
         margin-top: 5px;
+    }
+
+    .db {
+        position: absolute;
+        top: 25px;
+        right: 5%;
     }
 }

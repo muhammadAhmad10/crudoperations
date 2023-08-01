@@ -7,6 +7,7 @@ import Loader from "./Loader";
 export default function FavouriteRecipes() {
   const [data, setData] = useState([]);
   const location = useLocation();
+  const db = JSON.parse(localStorage.getItem("db"));
   const [author, setAuthor] = useState(null);
   const [loading, setLoading] = useState(false);
 
@@ -111,12 +112,15 @@ export default function FavouriteRecipes() {
   });
 
   return (
-    <div className="showRecipe">
+    <div className="showRecipe position-relative">
       {loading ? (
         <Loader />
       ) : (
         <>
           <h1 className="text-light">Recipes</h1>
+          <div className="text-light db">
+            {db ? <p>{db}</p> : <p>mongodb</p>}
+          </div>{" "}
           <div className=" recipies d-flex flex-row flex-wrap justify-content-center align-items-center pb-2">
             {RecipeCards}
           </div>

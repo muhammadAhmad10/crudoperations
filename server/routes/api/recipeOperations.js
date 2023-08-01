@@ -105,7 +105,6 @@ router.post("/", upload.single("image"), async (req, res) => {
   if (!file) {
     return res.status(400).send("No file uploaded");
   }
-
   const filename = Date.now() + "_" + file.originalname;
   const filepath = `books/${filename}`;
 
@@ -127,22 +126,45 @@ router.post("/", upload.single("image"), async (req, res) => {
       bucketFile.metadata.metadata.firebaseStorageDownloadTokens
     }`;
 
-    const newRecipe = new Recipe({
-      title: title,
-      ingredients: ingredients,
-      instructions: instructions,
-      servings: servings,
-      image: imageUrl,
-      category: category,
-      author: author,
-    });
+    const [filesInStorageBucket] = await bucket.getFiles();
+    for (const file of filesInStorageBucket) {
+      if (file == imageUrl) {
+        console.log("deleting old book: ", file);
+      }
+    }
+    if (imageUrl) {
+      if (
+        title &&
+        ingredients &&
+        instructions &&
+        servings &&
+        category &&
+        author &&
+        imageUrl
+      ) {
+        const newRecipe = new Recipe({
+          title: title,
+          ingredients: ingredients,
+          instructions: instructions,
+          servings: servings,
+          image: imageUrl,
+          category: category,
+          author: author,
+        });
 
-    try {
-      const savedBook = await newRecipe.save();
-      console.log("recipe posted successfuly");
-    } catch (error) {
-      console.error("Error saving recipe:", error);
-      res.status(500).send("Error saving recipe");
+        try {
+          const savedBook = await newRecipe.save();
+          res.status(200).send("recipe posted successfully.");
+        } catch (error) {
+          console.error("Error saving recipe:", error);
+          res.status(500).send("Error saving recipe");
+        }
+      } else {
+        console.log("Some field value is missing.");
+        res.status(300).send("Some field value is missing.");
+      }
+    } else {
+      res.status(700).send("There is problem with Uploading image.");
     }
   });
 
