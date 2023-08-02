@@ -106,7 +106,7 @@ router.post("/", upload.single("image"), async (req, res) => {
     return res.status(400).send("No file uploaded");
   }
   const filename = Date.now() + "_" + file.originalname;
-  const filepath = `books/${filename}`;
+  const filepath = `recipes/${filename}`;
 
   const bucketFile = bucket.file(filepath);
 
@@ -151,13 +151,23 @@ router.post("/", upload.single("image"), async (req, res) => {
           category: category,
           author: author,
         });
-
-        try {
-          const savedBook = await newRecipe.save();
-          res.status(200).send("recipe posted successfully.");
-        } catch (error) {
-          console.error("Error saving recipe:", error);
-          res.status(500).send("Error saving recipe");
+        const isAlreadyUploaded = await Recipe.findOne({
+          title: { $regex: new RegExp(`^${title}$`, "i") },
+          author: author,
+        });
+        if (!isAlreadyUploaded) {
+          try {
+            const savedBook = await newRecipe.save();
+            res.status(200).send("recipe posted successfully.");
+          } catch (error) {
+            console.error("Error saving recipe:", error);
+            res.status(500).send("Error saving recipe");
+          }
+        } else {
+          res
+            .status(460)
+            .send("You have already shared recipe with this title!");
+          console.log("item already exist");
         }
       } else {
         console.log("Some field value is missing.");
@@ -191,6 +201,25 @@ router.put("/:id", async (req, res) => {
 router.delete("/:id", async (req, res) => {
   try {
     let deletedRecipe = await Recipe.findByIdAndDelete(req.params.id);
+    const filename = deletedRecipe.image;
+
+    function getPathStorageFromUrl(url) {
+      const baseUrl =
+        "https://firebasestorage.googleapis.com/v0/b/web-dev-acccd.appspot.com/o/";
+      let imagePath = url.replace(baseUrl, "");
+      const indexOfEndPath = imagePath.indexOf("?");
+      imagePath = imagePath.substring(0, indexOfEndPath);
+      imagePath = imagePath.replace("%2F", "/");
+      return imagePath;
+    }
+
+    const storage = admin.storage();
+    const imagePath = getPathStorageFromUrl(filename);
+    storage
+      .bucket()
+      .file(imagePath)
+      .delete()
+      .catch((err) => console.error(err));
     if (!deletedRecipe)
       return res.status(500).send(`Couldnt delete
     ${req.params.id} `);
