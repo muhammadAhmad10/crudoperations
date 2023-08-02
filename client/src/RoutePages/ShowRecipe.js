@@ -26,6 +26,33 @@ export default function ShowRecipe() {
   const [totalPages, setTotalPages] = useState(0);
   const [recipesPerPage] = useState(6);
 
+  window.addEventListener("beforeunload", () => {
+    const itemsToKeep = ["isLogin", "author", "db"];
+    for (const key in localStorage) {
+      // Check if the item is in the list of items to keep
+      if (!itemsToKeep.includes(key)) {
+        // Delete the item
+        localStorage.removeItem(key);
+      }
+    }
+    // const email = author;
+    // console.log(email);
+    // localStorage.clear();
+    // localStorage.setItem("isLogin", JSON.stringify("login"));
+    // localStorage.setItem("author", JSON.stringify(email));
+  });
+
+  useEffect(() => {
+    const itemsToKeep = ["isLogin", "author", "db"];
+    for (const key in localStorage) {
+      // Check if the item is in the list of items to keep
+      if (!itemsToKeep.includes(key)) {
+        // Delete the item
+        localStorage.removeItem(key);
+      }
+    }
+  }, [location.pathname === "/"]);
+
   const handlePageChange = (pageNumber) => {
     setCurrentPage(pageNumber);
   };
@@ -120,17 +147,25 @@ export default function ShowRecipe() {
     const keyOfPages = db + "key";
     const pages = JSON.parse(localStorage.getItem(keyOfPages));
     const d = JSON.parse(localStorage.getItem(keyOfPagesData));
-    const dataOfCurrentPage = d.data;
-    if (dataOfCurrentPage !== null && pages == totalPages) {
+
+    if (d !== null) {
+      var dataOfCurrentPage = d.data;
+    }
+    if (
+      dataOfCurrentPage !== null &&
+      pages == totalPages &&
+      dataOfCurrentPage !== undefined
+    ) {
       setData(dataOfCurrentPage);
     } else {
       var url = "";
-      if (db === "mongodb") {
+      if (db === "mongodb" || db === null) {
+        console.log(db, currentPage, recipesPerPage);
         url = `http://localhost:4000/api/recipes?page=${currentPage}&limit=${recipesPerPage}`;
       } else {
         url = `http://localhost:8000/api/recipes?page=${currentPage}&limit=${recipesPerPage}`;
       }
-      if (db && location.pathname === "/") {
+      if ((db && location.pathname === "/") || db === null) {
         setLoading(true);
         axios.get(url).then((response) => {
           setData(response.data.data);
