@@ -24,6 +24,10 @@
 
 
 @media screen and (max-width: 850px) {
+    .head {
+        margin-bottom: 20px;
+    }
+
     .adm {
         width: 58%;
     }
@@ -35,6 +39,7 @@
 
     .search {
         width: 42%;
+        height: 100%;
     }
 
     .head {
@@ -52,6 +57,7 @@
 
 @media screen and (max-width: 750px) {
     .head {
+        height: 60px;
         margin-bottom: 0px;
     }
 

@@ -1,6 +1,6 @@
 import "../styles/showRecipe.css";
 import { useNavigate, useLocation } from "react-router-dom";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import axios from "axios";
 import { Link } from "react-router-dom";
 import { Pagination } from "react-bootstrap";
@@ -21,6 +21,8 @@ export default function ShowRecipe() {
   const [added, setAdded] = useState(false);
   const [favoriteButtonText, setFavoriteButtonText] = useState("Add Favorite");
   const [favorites, setFavorites] = useState([]);
+  const [initialDataFetched, setInitialDataFetched] = useState(false);
+  const initialApiCall = useRef(false);
 
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(0);
@@ -29,25 +31,16 @@ export default function ShowRecipe() {
   window.addEventListener("beforeunload", () => {
     const itemsToKeep = ["isLogin", "author", "db"];
     for (const key in localStorage) {
-      // Check if the item is in the list of items to keep
       if (!itemsToKeep.includes(key)) {
-        // Delete the item
         localStorage.removeItem(key);
       }
     }
-    // const email = author;
-    // console.log(email);
-    // localStorage.clear();
-    // localStorage.setItem("isLogin", JSON.stringify("login"));
-    // localStorage.setItem("author", JSON.stringify(email));
   });
 
   useEffect(() => {
     const itemsToKeep = ["isLogin", "author", "db"];
     for (const key in localStorage) {
-      // Check if the item is in the list of items to keep
       if (!itemsToKeep.includes(key)) {
-        // Delete the item
         localStorage.removeItem(key);
       }
     }
@@ -110,7 +103,6 @@ export default function ShowRecipe() {
           url = `http://localhost:8000/api/recipes/${author}?page=${currentPage}&limit=${recipesPerPage}`;
         }
         setLoading(true);
-        console.log(url);
         await axios.get(url).then((res) => {
           if (db === "mongodb") {
             setOwnerData(
@@ -131,15 +123,7 @@ export default function ShowRecipe() {
       }
     };
     getData();
-  }, [
-    recipeDeleted,
-    currentPage,
-    location.pathname,
-    db,
-    author,
-    added,
-    totalPages,
-  ]);
+  }, [recipeDeleted, currentPage, db, author, added, totalPages]);
   //location.pathname, db, userDataFetched,
 
   useEffect(() => {
@@ -149,67 +133,150 @@ export default function ShowRecipe() {
     const d = JSON.parse(localStorage.getItem(keyOfPagesData));
 
     if (d !== null) {
+      console.log("d is null: ", d);
       var dataOfCurrentPage = d.data;
+      setData(d.data);
     }
+
     if (
       dataOfCurrentPage !== null &&
-      pages == totalPages &&
+      pages === totalPages &&
       dataOfCurrentPage !== undefined
     ) {
+      console.log("getting data of recipes from local storage", db);
       setData(dataOfCurrentPage);
-    } else {
-      var url = "";
-      if (db === "mongodb" || db === null) {
-        console.log(db, currentPage, recipesPerPage);
-        url = `http://localhost:4000/api/recipes?page=${currentPage}&limit=${recipesPerPage}`;
-      } else {
-        url = `http://localhost:8000/api/recipes?page=${currentPage}&limit=${recipesPerPage}`;
-      }
-      if ((db && location.pathname === "/") || db === null) {
-        setLoading(true);
-        axios.get(url).then((response) => {
-          setData(response.data.data);
-          setTotalPages(response.data.totalPages);
+    } else if ((db && location.pathname === "/") || db === null) {
+      // Check if an API call is already in progress
+      if (!loading) {
+        setLoading(true); // Set loading flag to indicate API call is in progress
+        console.log("going to make an api call");
+        var url = "";
+        if (db === "mongodb") {
+          url = `http://localhost:4000/api/recipes?page=${currentPage}&limit=${recipesPerPage}`;
+        } else {
+          url = `http://localhost:8000/api/recipes?page=${currentPage}&limit=${recipesPerPage}`;
+        }
 
-          localStorage.setItem(
-            keyOfPagesData,
-            JSON.stringify({
-              data: response.data.data,
-              currentPage: currentPage,
-            })
-          );
-          localStorage.setItem(
-            keyOfPages,
-            JSON.stringify(response.data.totalPages)
-          );
-          setLoading(false);
-        });
+        const getData = async () => {
+          try {
+            const response = await axios.get(url);
+            setData(response.data.data);
+            setTotalPages(response.data.totalPages);
+
+            localStorage.setItem(
+              keyOfPagesData,
+              JSON.stringify({
+                data: response.data.data,
+                currentPage: currentPage,
+              })
+            );
+            localStorage.setItem(
+              keyOfPages,
+              JSON.stringify(response.data.totalPages)
+            );
+          } catch (error) {
+            console.error("Error fetching data:", error);
+          } finally {
+            setLoading(false); // Reset loading flag when API call is done
+          }
+        };
+
+        getData();
       }
     }
 
-    const refresh = JSON.parse(localStorage.getItem("refresh"));
-    if (refresh && currentPage == pages) {
-      const lastPageUrl = `http://localhost:4000/api/recipes?page=${pages}&limit=${recipesPerPage}`;
-      axios.get(lastPageUrl).then((response) => {
-        const lastPageData = response.data.data;
-        setData(lastPageData);
-        setRecipeDeleted(false);
-        localStorage.setItem(
-          keyOfPagesData,
-          JSON.stringify({
-            data: lastPageData,
-            currentPage: pages,
-          })
-        );
-        setLoading(false);
-        localStorage.setItem("edited", JSON.stringify(false));
-        localStorage.setItem("refresh", JSON.stringify(false));
+    // const refresh = JSON.parse(localStorage.getItem("refresh"));
+    // if (refresh && currentPage == pages) {
+    //   const lastPageUrl = `http://localhost:4000/api/recipes?page=${pages}&limit=${recipesPerPage}`;
+    //   axios.get(lastPageUrl).then((response) => {
+    //     const lastPageData = response.data.data;
+    //     setData(lastPageData);
+    //     setRecipeDeleted(false);
+    //     localStorage.setItem(
+    //       keyOfPagesData,
+    //       JSON.stringify({
+    //         data: lastPageData,
+    //         currentPage: pages,
+    //       })
+    //     );
+    //     setLoading(false);
+    //     localStorage.setItem("edited", JSON.stringify(false));
+    //     localStorage.setItem("refresh", JSON.stringify(false));
 
-        setRecipeDeleted(false);
-      });
-    }
-    setAdded(JSON.parse(localStorage.getItem("edited")));
-  }, [db, location.pathname, author, recipeDeleted, currentPage, added]);
+    //     setRecipeDeleted(false);
+    //   });
+    // }
+  }, [
+    db,
+    location.pathname,
+    author,
+    recipeDeleted,
+    currentPage,
+    added,
+    loading,
+  ]);
+
+  // useEffect(() => {
+  //   const keyOfPagesData = db + currentPage;
+  //   const keyOfPages = db + "key";
+  //   const pages = JSON.parse(localStorage.getItem(keyOfPages));
+  //   const d = JSON.parse(localStorage.getItem(keyOfPagesData));
+
+  //   if (d !== null) {
+  //     console.log("getting data of recipes from local storage", db);
+  //     setData(d.data);
+  //     setLoading(false);
+  //   } else {
+  //     if (
+  //       !initialApiCall.current &&
+  //       ((db && location.pathname === "/") || db === null)
+  //     ) {
+  //       initialApiCall.current = true; // Set the flag to true
+  //       setLoading(true);
+
+  //       var url = "";
+  //       if (db === "mongodb") {
+  //         url = `http://localhost:4000/api/recipes?page=${currentPage}&limit=${recipesPerPage}`;
+  //       } else {
+  //         url = `http://localhost:8000/api/recipes?page=${currentPage}&limit=${recipesPerPage}`;
+  //       }
+
+  //       const getData = async () => {
+  //         try {
+  //           const response = await axios.get(url);
+  //           setData(response.data.data);
+  //           setTotalPages(response.data.totalPages);
+
+  //           localStorage.setItem(
+  //             keyOfPagesData,
+  //             JSON.stringify({
+  //               data: response.data.data,
+  //               currentPage: currentPage,
+  //             })
+  //           );
+  //           localStorage.setItem(
+  //             keyOfPages,
+  //             JSON.stringify(response.data.totalPages)
+  //           );
+  //         } catch (error) {
+  //           console.error("Error fetching data:", error);
+  //         } finally {
+  //           setLoading(false);
+  //         }
+  //       };
+
+  //       getData();
+  //     }
+  //   }
+  // }, [
+  //   db,
+  //   location.pathname,
+  //   author,
+  //   recipeDeleted,
+  //   currentPage,
+  //   added,
+  //   initialApiCall,
+  // ]);
 
   const handleDelete = async (id) => {
     console.log(db);
@@ -277,27 +344,9 @@ export default function ShowRecipe() {
   };
 
   //Handling the favorites part
-  // useEffect(() => {
-  //   console.log("into useEffect of Handle Favorite");
-  //   // setLoading(true);
-  //   const fetchData = async () => {
-  //     if (author) {
-  //       const res = await axios.get(
-  //         `http://localhost:4000/api/favorites/${author}`
-  //       );
-  //       const responseData = await res.data.recipes;
-  //       setFavorites(responseData);
-  //       // setLoading(false);
-  //     }
-  //   };
-  //   fetchData();
-  // }, [favoriteButtonText]);
-
   useEffect(() => {
-    console.log("into useEffect of Handle Favorite");
-
     const fetchData = async () => {
-      if (author) {
+      if (author && favoriteButtonText && location.pathname !== "/myRecipes") {
         try {
           const res = await axios.get(
             `http://localhost:4000/api/favorites/${author}`
