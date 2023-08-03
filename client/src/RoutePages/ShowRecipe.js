@@ -266,7 +266,7 @@ export default function ShowRecipe() {
     };
 
     fetchData();
-  }, [author, favoriteButtonText]);
+  }, [author, favoriteButtonText, location.pathname]);
 
   const handleFavorite = async (id) => {
     const favs = favorites.filter((fav) => {
