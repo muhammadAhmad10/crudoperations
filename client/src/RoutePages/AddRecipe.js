@@ -179,7 +179,7 @@ export default function AddRecipe() {
           Toast.fire({
             icon: "error",
             title: "Error",
-            text: error.message + ". Message: " + error.response.data,
+            text: error.response.data,
             background: "#f27474",
           });
         }

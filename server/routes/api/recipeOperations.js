@@ -108,54 +108,55 @@ router.post("/", upload.single("image"), async (req, res) => {
   const filename = Date.now() + "_" + file.originalname;
   const filepath = `recipes/${filename}`;
 
-  const bucketFile = bucket.file(filepath);
-
-  const stream = bucketFile.createWriteStream({
-    resumable: false,
-    metadata: {
-      metadata: {
-        firebaseStorageDownloadTokens: Date.now(),
-      },
-    },
+  const isAlreadyUploaded = await Recipe.findOne({
+    title: { $regex: new RegExp(`^${title}$`, "i") },
+    author: author,
   });
+  if (!isAlreadyUploaded) {
+    const bucketFile = bucket.file(filepath);
 
-  stream.on("finish", async () => {
-    const imageUrl = `https://firebasestorage.googleapis.com/v0/b/${
-      bucket.name
-    }/o/${encodeURIComponent(filepath)}?alt=media&token=${
-      bucketFile.metadata.metadata.firebaseStorageDownloadTokens
-    }`;
+    const stream = bucketFile.createWriteStream({
+      resumable: false,
+      metadata: {
+        metadata: {
+          firebaseStorageDownloadTokens: Date.now(),
+        },
+      },
+    });
 
-    const [filesInStorageBucket] = await bucket.getFiles();
-    for (const file of filesInStorageBucket) {
-      if (file == imageUrl) {
-        console.log("deleting old book: ", file);
+    stream.on("finish", async () => {
+      const imageUrl = `https://firebasestorage.googleapis.com/v0/b/${
+        bucket.name
+      }/o/${encodeURIComponent(filepath)}?alt=media&token=${
+        bucketFile.metadata.metadata.firebaseStorageDownloadTokens
+      }`;
+
+      const [filesInStorageBucket] = await bucket.getFiles();
+      for (const file of filesInStorageBucket) {
+        if (file == imageUrl) {
+          console.log("deleting old book: ", file);
+        }
       }
-    }
-    if (imageUrl) {
-      if (
-        title &&
-        ingredients &&
-        instructions &&
-        servings &&
-        category &&
-        author &&
-        imageUrl
-      ) {
-        const newRecipe = new Recipe({
-          title: title,
-          ingredients: ingredients,
-          instructions: instructions,
-          servings: servings,
-          image: imageUrl,
-          category: category,
-          author: author,
-        });
-        const isAlreadyUploaded = await Recipe.findOne({
-          title: { $regex: new RegExp(`^${title}$`, "i") },
-          author: author,
-        });
-        if (!isAlreadyUploaded) {
+      if (imageUrl) {
+        if (
+          title &&
+          ingredients &&
+          instructions &&
+          servings &&
+          category &&
+          author &&
+          imageUrl
+        ) {
+          const newRecipe = new Recipe({
+            title: title,
+            ingredients: ingredients,
+            instructions: instructions,
+            servings: servings,
+            image: imageUrl,
+            category: category,
+            author: author,
+          });
+
           try {
             const savedBook = await newRecipe.save();
             res.status(200).send("recipe posted successfully.");
@@ -164,21 +165,18 @@ router.post("/", upload.single("image"), async (req, res) => {
             res.status(500).send("Error saving recipe");
           }
         } else {
-          res
-            .status(460)
-            .send("You have already shared recipe with this title!");
-          console.log("item already exist");
+          console.log("Some field value is missing.");
+          res.status(300).send("Some field value is missing.");
         }
       } else {
-        console.log("Some field value is missing.");
-        res.status(300).send("Some field value is missing.");
+        res.status(700).send("There is problem with Uploading image.");
       }
-    } else {
-      res.status(700).send("There is problem with Uploading image.");
-    }
-  });
-
-  stream.end(file.buffer);
+    });
+    stream.end(file.buffer);
+  } else {
+    res.status(460).send("You have already shared recipe with this title!");
+    console.log("item already exist");
+  }
 });
 
 //edit a recipe
