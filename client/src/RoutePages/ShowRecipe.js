@@ -58,28 +58,6 @@ export default function ShowRecipe() {
     setCurrentPage((currentPage) => currentPage + 1);
   };
 
-  // useEffect(() => {
-  //   fetchData();
-  // }, [currentPage]);
-
-  // const fetchData = async () => {
-  //   try {
-  //     const response = await axios.get(
-  //       `http://localhost:4000/api/recipes?page=${currentPage}&limit=${recipesPerPage}`
-  //     );
-  //     console.log("data from paginated mongo request: ", response.data.data);
-  //     setData(response.data.data);
-  //     setTotalPages(response.data.totalPages);
-  //   } catch (error) {
-  //     console.log("Error fetching data:", error);
-  //   }
-  // };
-
-  // const totalPages =
-  //   location.pathname === "/myRecipes"
-  //     ? Math.ceil(ownerData.length / recipesPerPage)
-  //     : Math.ceil(data.length / recipesPerPage);
-
   useEffect(() => {
     setAuthor(JSON.parse(localStorage.getItem("author")));
     setTotalPages(1);
@@ -147,9 +125,10 @@ export default function ShowRecipe() {
       setData(dataOfCurrentPage);
     } else if ((db && location.pathname === "/") || db === null) {
       // Check if an API call is already in progress
-      if (!loading) {
+      if (!loading && !initialApiCall.current) {
+        initialApiCall.current = true;
         setLoading(true); // Set loading flag to indicate API call is in progress
-        console.log("going to make an api call");
+        console.log("going to make an api call", loading);
         var url = "";
         if (db === "mongodb") {
           url = `http://localhost:4000/api/recipes?page=${currentPage}&limit=${recipesPerPage}`;
@@ -178,34 +157,13 @@ export default function ShowRecipe() {
             console.error("Error fetching data:", error);
           } finally {
             setLoading(false); // Reset loading flag when API call is done
+            initialApiCall.current = false;
           }
         };
 
         getData();
       }
     }
-
-    // const refresh = JSON.parse(localStorage.getItem("refresh"));
-    // if (refresh && currentPage == pages) {
-    //   const lastPageUrl = `http://localhost:4000/api/recipes?page=${pages}&limit=${recipesPerPage}`;
-    //   axios.get(lastPageUrl).then((response) => {
-    //     const lastPageData = response.data.data;
-    //     setData(lastPageData);
-    //     setRecipeDeleted(false);
-    //     localStorage.setItem(
-    //       keyOfPagesData,
-    //       JSON.stringify({
-    //         data: lastPageData,
-    //         currentPage: pages,
-    //       })
-    //     );
-    //     setLoading(false);
-    //     localStorage.setItem("edited", JSON.stringify(false));
-    //     localStorage.setItem("refresh", JSON.stringify(false));
-
-    //     setRecipeDeleted(false);
-    //   });
-    // }
   }, [
     db,
     location.pathname,
@@ -216,68 +174,7 @@ export default function ShowRecipe() {
     loading,
   ]);
 
-  // useEffect(() => {
-  //   const keyOfPagesData = db + currentPage;
-  //   const keyOfPages = db + "key";
-  //   const pages = JSON.parse(localStorage.getItem(keyOfPages));
-  //   const d = JSON.parse(localStorage.getItem(keyOfPagesData));
-
-  //   if (d !== null) {
-  //     console.log("getting data of recipes from local storage", db);
-  //     setData(d.data);
-  //     setLoading(false);
-  //   } else {
-  //     if (
-  //       !initialApiCall.current &&
-  //       ((db && location.pathname === "/") || db === null)
-  //     ) {
-  //       initialApiCall.current = true; // Set the flag to true
-  //       setLoading(true);
-
-  //       var url = "";
-  //       if (db === "mongodb") {
-  //         url = `http://localhost:4000/api/recipes?page=${currentPage}&limit=${recipesPerPage}`;
-  //       } else {
-  //         url = `http://localhost:8000/api/recipes?page=${currentPage}&limit=${recipesPerPage}`;
-  //       }
-
-  //       const getData = async () => {
-  //         try {
-  //           const response = await axios.get(url);
-  //           setData(response.data.data);
-  //           setTotalPages(response.data.totalPages);
-
-  //           localStorage.setItem(
-  //             keyOfPagesData,
-  //             JSON.stringify({
-  //               data: response.data.data,
-  //               currentPage: currentPage,
-  //             })
-  //           );
-  //           localStorage.setItem(
-  //             keyOfPages,
-  //             JSON.stringify(response.data.totalPages)
-  //           );
-  //         } catch (error) {
-  //           console.error("Error fetching data:", error);
-  //         } finally {
-  //           setLoading(false);
-  //         }
-  //       };
-
-  //       getData();
-  //     }
-  //   }
-  // }, [
-  //   db,
-  //   location.pathname,
-  //   author,
-  //   recipeDeleted,
-  //   currentPage,
-  //   added,
-  //   initialApiCall,
-  // ]);
-
+  //Handling the delete recipe functionality
   const handleDelete = async (id) => {
     console.log(db);
     var url = ``;
@@ -411,6 +308,7 @@ export default function ShowRecipe() {
     }
   };
 
+  //Handling the pagination and cards to be displayed to user
   const RecipeCards = data.map((recipe) => {
     const isFavorite = favorites.some((fav) => fav._id === recipe._id);
 
