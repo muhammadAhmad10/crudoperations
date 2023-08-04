@@ -89,6 +89,10 @@ router.get("/search/:recipeTitle", async (req, res) => {
   const recipe = await Recipe.find({
     title: { $regex: req.params.recipeTitle.toLowerCase(), $options: "i" },
   });
+  // console.log("search result is: ", recipe);
+  if (recipe.length === 0) {
+    return res.status(468).send("No recipe found!");
+  }
   if (!recipe)
     return res
       .status(404)

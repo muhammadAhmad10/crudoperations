@@ -1,20 +1,71 @@
-import { useLocation, Link } from "react-router-dom";
+import { useLocation, Link, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import axios from "axios";
+import Swal from "sweetalert2";
+
 export default function SearchedItems() {
   const [data, setData] = useState([]);
   const location = useLocation();
+  const navigate = useNavigate();
   const searchText = location.state.searchText;
+  const [loading, setLoading] = useState(false);
+
+  const Toast = Swal.mixin({
+    toast: true,
+    position: "top-right",
+    color: "white",
+    iconColor: "white",
+    customClass: {
+      popup: "colored-toast",
+    },
+    showConfirmButton: false,
+    timer: 1500,
+    timerProgressBar: true,
+  });
+
+  // useEffect(() => {
+  //   if (searchText) {
+  //     axios
+  //       .get(`http://localhost:4000/api/recipes/search/${searchText}`)
+  //       .then((res) => {
+  //         setData(res.data);
+  //       })
+  //       .catch((err) => {
+  //         console.log("Error searching data: ", err);
+  //       });
+  //   }
+  // }, [searchText]);
 
   useEffect(() => {
-    try {
-      axios
-        .get(`http://localhost:4000/api/recipes/search/${searchText}`)
-        .then((res) => {
+    // Set loading to true before getting data
+    const getData = async () => {
+      setLoading(true);
+      if (loading && data.length === 0) {
+        console.log("going to make an api call");
+        try {
+          const res = await axios.get(
+            `http://localhost:4000/api/recipes/search/${searchText}`
+          );
           setData(res.data);
-        });
-    } catch (err) {
-      console.log("Error searching data: ", err);
+          setLoading(false); // Set loading to false after data is fetched
+        } catch (err) {
+          await Toast.fire({
+            icon: "error",
+            title: "Error",
+            text: err.response.data,
+            background: "#f27474",
+          });
+          navigate("/");
+          // console.log("Error searching data: ", err);
+        }
+      }
+    };
+    getData();
+  }, [searchText, loading, data]); // Include data as a dependency
+
+  useEffect(() => {
+    if (searchText) {
+      setData([]);
     }
   }, [searchText]);
 
