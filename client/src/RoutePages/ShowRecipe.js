@@ -14,14 +14,13 @@ export default function ShowRecipe() {
   const [author, setAuthor] = useState(null);
   const [ownerData, setOwnerData] = useState([]);
   const db = JSON.parse(localStorage.getItem("db"));
-  const [userDataFetched, setUserDataFetched] = useState(false);
+  // const [userDataFetched, setUserDataFetched] = useState(false);
   const [disableButton, setDisableButton] = useState(false);
   const [recipeDeleted, setRecipeDeleted] = useState(false);
   const [loading, setLoading] = useState(false);
   const [added, setAdded] = useState(false);
   const [favoriteButtonText, setFavoriteButtonText] = useState("Add Favorite");
   const [favorites, setFavorites] = useState([]);
-  const [initialDataFetched, setInitialDataFetched] = useState(false);
   const initialApiCall = useRef(false);
 
   const [currentPage, setCurrentPage] = useState(1);
@@ -93,7 +92,7 @@ export default function ShowRecipe() {
             );
             setTotalPages(res.data.totalPages);
           }
-          setUserDataFetched(true);
+          // setUserDataFetched(true);
         });
         setLoading(false);
         setRecipeDeleted(false);

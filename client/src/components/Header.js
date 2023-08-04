@@ -1,17 +1,10 @@
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import "../styles/header.css";
-import { useState, useEffect } from "react";
-import axios from "axios";
+import { useState } from "react";
 
 export default function Header() {
-  const [data, setData] = useState([]);
   const [searchText, setSearchText] = useState("");
   const author = JSON.parse(localStorage.getItem("author"));
-
-  // useEffect(() => {
-  //   setData(JSON.parse(localStorage.getItem("mongoData")));
-  //   console.log(data);
-  // }, []);
 
   const handleText = (e) => {
     setSearchText(e.target.value);
